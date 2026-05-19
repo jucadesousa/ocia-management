@@ -1,0 +1,72 @@
+import Link from "next/link";
+import { requireAuth } from "@/lib/dal";
+
+export default async function ReportsPage() {
+  await requireAuth();
+
+  const cards = [
+    {
+      href: "/reports/attendance",
+      title: "Attendance Report",
+      description:
+        "At-risk participants, per-session summaries, and attendance percentages. Exportable to Excel.",
+      badge: "Excel export",
+    },
+    {
+      href: "/reports/roster",
+      title: "Session Roster",
+      description:
+        "Printable participant roster for a session. Includes a blank volunteer attendance sheet.",
+      badge: "Printable",
+    },
+    {
+      href: "/reports/contacts",
+      title: "Contact List",
+      description:
+        "Phone and email for all active participants, filterable by group.",
+      badge: "Print · Excel",
+    },
+    {
+      href: "/reports/ministry",
+      title: "Ministry Overview",
+      description:
+        "Stage distribution, missing documents, and sacrament readiness.",
+      badge: "Excel export",
+    },
+  ];
+
+  return (
+    <div className="p-6 space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
+        <p className="text-sm text-gray-500 mt-0.5">
+          Select a report to view or export.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+        {cards.map((card) => (
+          <Link
+            key={card.href}
+            href={card.href}
+            className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+          >
+            <div className="flex flex-col h-full gap-3">
+              <div className="flex-1">
+                <p className="text-base font-semibold text-gray-900">
+                  {card.title}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">{card.description}</p>
+              </div>
+              <div className="flex justify-end">
+                <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                  {card.badge}
+                </span>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  VOLUNTEER
+}
+
+enum Group {
+  ENGLISH
+  SPANISH
+}
+
+enum ParticipantStatus {
+  ACTIVE
+  INACTIVE
+  WITHDRAWN
+}
+
+enum OciaStage {
+  INQUIRY
+  CATECHUMEN
+  CANDIDATE
+  ELECT
+  MYSTAGOGY
+  COMPLETED
+}
+
+enum SessionType {
+  WEEKLY
+  REFLECTION
+}
+
+enum SessionStatus {
+  PLANNED
+  COMPLETED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  LEFT_EARLY
+  EXCUSED
+}
+
+enum DocumentType {
+  BAPTISM_CERT
+  MARRIAGE_DOC
+  OTHER
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+// Staff login accounts — linked to Supabase Auth via supabaseUserId
+model User {
+  id             String   @id @default(cuid())
+  supabaseUserId String   @unique
+  email          String   @unique
+  name           String
+  role           Role     @default(VOLUNTEER)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// One record per OCIA cycle year (e.g., "OCIA 2025–2026")
+model Cycle {
+  id                     String        @id @default(cuid())
+  year                   Int           // graduation year, e.g. 2026
+  name                   String        // display name, e.g. "OCIA 2025–2026"
+  startDate              DateTime?
+  endDate                DateTime?
+  isCurrent              Boolean       @default(false)
+  atRiskThresholdPercent Int           @default(75)
+  createdAt              DateTime      @default(now())
+  sessions               Session[]
+  participants           Participant[]
+}
+
+model Participant {
+  id            String            @id @default(cuid())
+  // Identity
+  firstName     String
+  lastName      String
+  maidenName    String?
+  fullName      String            // stored explicitly; editable; defaults to firstName + " " + lastName
+  preferredName String?
+  dateOfBirth   DateTime?
+  placeOfBirth  String?
+  photoUrl      String?           // Supabase Storage path
+  // Contact
+  phone         String?
+  phoneWork     String?
+  email         String?
+  address       String?           // street line
+  city          String?
+  state         String?
+  zipCode       String?
+  // Family
+  spouseName    String?
+  occupation    String?
+  // Background
+  currentReligion String?
+  maritalStatus   String?         // Single, Married, Separated, Divorced, Widowed
+  // Admin
+  interviewDate DateTime?
+  notes         String?
+  // OCIA placement
+  group         Group
+  status        ParticipantStatus @default(ACTIVE)
+  ociaStage     OciaStage         @default(INQUIRY)
+  sponsorName   String?
+  // Relations
+  cycleId       String
+  cycle         Cycle             @relation(fields: [cycleId], references: [id])
+  sacramentalRecord SacramentalRecord?
+  documents       Document[]
+  attendanceRecords AttendanceRecord[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model SacramentalRecord {
+  id                    String      @id @default(cuid())
+  participantId         String      @unique
+  participant           Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  // Baptism
+  isBaptized            Boolean?
+  baptismDenomination   String?     // denomination/church where baptized
+  baptismDate           DateTime?
+  baptismParish         String?
+  baptismCertReceived   Boolean     @default(false)
+  // Sacraments
+  hasFirstCommunion     Boolean?
+  hasConfirmation       Boolean?
+  // Marriage / family status
+  marriageStatus        String?     // Single, Married, Separated, Divorced, Widowed
+  marriedToCatholic     Boolean?
+  marriedByCatholicPriest Boolean?
+  hadPriorMarriage      Boolean?
+  spouseHadPriorMarriage Boolean?
+  marriageCertReceived  Boolean     @default(false)
+  annulmentStatus       String?     // None, Pending, Granted
+  // Children
+  hasChildren           Boolean?
+  childrenNotes         String?
+  // OCIA milestones
+  riteOfAcceptanceDate  DateTime?
+  electionDate          DateTime?
+  easterVigilDate       DateTime?
+  // Completion
+  completedAt           DateTime?
+  updatedAt             DateTime    @updatedAt
+}
+
+model Session {
+  id        String           @id @default(cuid())
+  cycleId   String
+  cycle     Cycle            @relation(fields: [cycleId], references: [id])
+  number    Int              // 1–30 weekly; 1–4 reflection
+  title     String?
+  presenter String?
+  date      DateTime?
+  type      SessionType      @default(WEEKLY)
+  status    SessionStatus    @default(PLANNED)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  attendanceRecords AttendanceRecord[]
+
+  @@unique([cycleId, type, number])
+}
+
+model AttendanceRecord {
+  id            String           @id @default(cuid())
+  participantId String
+  participant   Participant      @relation(fields: [participantId], references: [id])
+  sessionId     String
+  session       Session          @relation(fields: [sessionId], references: [id])
+  group         Group
+  status        AttendanceStatus @default(ABSENT)
+  recordedAt    DateTime         @default(now())
+
+  @@unique([participantId, sessionId])
+}
+
+model Document {
+  id            String       @id @default(cuid())
+  participantId String
+  participant   Participant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  type          DocumentType
+  fileName      String
+  storageUrl    String       // Supabase Storage path
+  uploadedAt    DateTime     @default(now())
+}
