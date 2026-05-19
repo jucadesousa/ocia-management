@@ -208,6 +208,29 @@ function SectionHeader({ title }: { title: string }) {
   );
 }
 
+function formatPhone(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 10);
+  if (!d) return "";
+  if (d.length <= 3) return `(${d}`;
+  if (d.length <= 6) return `(${d.slice(0, 3)})${d.slice(3)}`;
+  return `(${d.slice(0, 3)})${d.slice(3, 6)}-${d.slice(6)}`;
+}
+
+function PhoneInput({ name, placeholder }: { name: string; placeholder?: string }) {
+  const [value, setValue] = useState("");
+  return (
+    <input
+      id={name}
+      name={name}
+      type="tel"
+      value={value}
+      onChange={(e) => setValue(formatPhone(e.target.value))}
+      placeholder={placeholder}
+      className={inputCls}
+    />
+  );
+}
+
 function YesNoGroup({
   name,
   value,
@@ -367,11 +390,15 @@ export default function RegisterPage() {
               <Field label={t.state} name="state" placeholder={t.statePh} />
               <Field label={t.zipCode} name="zipCode" placeholder={t.zipPh} />
             </div>
-            <Field label={t.phone} name="phone" type="tel" placeholder={t.phonePh} />
+            <Field label={t.phone} name="phone">
+              <PhoneInput name="phone" placeholder={t.phonePh} />
+            </Field>
             <Field label={t.spouseName} name="spouseName" />
             <Field label={t.email} name="email" type="email" placeholder={t.emailPh} colSpan="full" />
             <Field label={t.occupation} name="occupation" />
-            <Field label={t.phoneWork} name="phoneWork" type="tel" placeholder={t.phoneWorkPh} />
+            <Field label={t.phoneWork} name="phoneWork">
+              <PhoneInput name="phoneWork" placeholder={t.phoneWorkPh} />
+            </Field>
 
             {/* ── Religious Affiliation ────────────────────────────── */}
             <SectionHeader title={t.sReligious} />
