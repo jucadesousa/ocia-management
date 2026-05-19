@@ -118,6 +118,13 @@ export async function updateParticipant(
   redirect(`/participants/${id}`);
 }
 
+function yesNo(formData: FormData, key: string): boolean | null {
+  const val = formData.get(key) as string;
+  if (val === "yes") return true;
+  if (val === "no") return false;
+  return null;
+}
+
 export async function registerParticipant(
   _state: ParticipantFormState,
   formData: FormData
@@ -127,7 +134,7 @@ export async function registerParticipant(
   const group = str(formData, "group") as Group | null;
 
   if (!firstName || !lastName || !group) {
-    return { error: "First name, last name, and group preference are required." };
+    return { error: "First name, last name, and language group are required." };
   }
 
   const cycle = await prisma.cycle.findFirst({ where: { isCurrent: true } });
@@ -135,20 +142,74 @@ export async function registerParticipant(
     return { error: "Registration is currently unavailable. Please contact the parish office." };
   }
 
-  await prisma.participant.create({
+  const dobRaw = str(formData, "dateOfBirth");
+  const maritalStatus = str(formData, "maritalStatus");
+
+  const participant = await prisma.participant.create({
     data: {
       firstName,
       lastName,
+      maidenName: str(formData, "maidenName"),
       fullName: `${firstName} ${lastName}`,
+      preferredName: str(formData, "preferredName"),
+      dateOfBirth: dobRaw ? new Date(dobRaw) : null,
+      placeOfBirth: str(formData, "placeOfBirth"),
       group,
       cycleId: cycle.id,
       phone: str(formData, "phone"),
+      phoneWork: str(formData, "phoneWork"),
       email: str(formData, "email"),
       address: str(formData, "address"),
+      city: str(formData, "city"),
+      state: str(formData, "state"),
+      zipCode: str(formData, "zipCode"),
+      spouseName: str(formData, "spouseName"),
+      occupation: str(formData, "occupation"),
+      currentReligion: str(formData, "currentReligion"),
+      maritalStatus,
+      sponsorName: str(formData, "sponsorName"),
+      notes: str(formData, "additionalComments"),
       status: "ACTIVE",
       ociaStage: "INQUIRY",
     },
   });
+
+  // Collect sacramental / background fields submitted on the public form
+  const isBaptized = yesNo(formData, "isBaptized");
+  const baptismDenomination = str(formData, "baptismDenomination");
+  const marriedToCatholic = yesNo(formData, "marriedToCatholic");
+  const marriedByCatholicPriest = yesNo(formData, "marriedByCatholicPriest");
+  const hadPriorMarriage = yesNo(formData, "hadPriorMarriage");
+  const spouseHadPriorMarriage = yesNo(formData, "spouseHadPriorMarriage");
+  const hasChildren = yesNo(formData, "hasChildren");
+  const childrenNotes = str(formData, "childrenNotes");
+
+  const hasSacramentalData =
+    isBaptized !== null ||
+    baptismDenomination ||
+    marriedToCatholic !== null ||
+    marriedByCatholicPriest !== null ||
+    hadPriorMarriage !== null ||
+    spouseHadPriorMarriage !== null ||
+    hasChildren !== null ||
+    childrenNotes;
+
+  if (hasSacramentalData) {
+    await prisma.sacramentalRecord.create({
+      data: {
+        participantId: participant.id,
+        isBaptized,
+        baptismDenomination,
+        marriageStatus: maritalStatus,
+        marriedToCatholic,
+        marriedByCatholicPriest,
+        hadPriorMarriage,
+        spouseHadPriorMarriage,
+        hasChildren,
+        childrenNotes,
+      },
+    });
+  }
 
   return { success: true };
 }
