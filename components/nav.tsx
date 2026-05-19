@@ -19,6 +19,7 @@ const volunteerLinks = [
   { href: "/dashboard",    label: "Dashboard" },
   { href: "/attendance",   label: "Attendance" },
   { href: "/participants", label: "Participants" },
+  { href: "/reports",      label: "Reports" },
 ];
 
 function HamburgerIcon() {
