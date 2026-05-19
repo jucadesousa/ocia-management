@@ -1,88 +1,88 @@
 # OCIA Management System — Implementation Plan
 
 **Project:** Saint Bartholomew OCIA Management System  
-**Domain:** ocia.sousacloud.com  
-**Plan Date:** 2026-05-18  
-**Stack:** Next.js 15 · Supabase · Vercel · Prisma · Tailwind CSS · shadcn/ui
+**Domain:** https://ocia.sousacloud.com  
+**Repository:** https://github.com/jucadesousa/ocia-management  
+**Plan Date:** 2026-05-18 · **Last updated:** 2026-05-19  
+**Status:** MVP delivered and live in production
 
 ---
 
-## Tech Stack Decision
+## Tech Stack (As Built)
 
-| Layer | Technology | Rationale |
+| Layer | Technology | Notes |
 |---|---|---|
-| Framework | Next.js 15 (App Router) | Full-stack React, SSR for fast loads, API routes co-located with UI |
-| Database | PostgreSQL via Supabase | Managed, free tier sufficient, RLS maps to RBAC |
-| Auth | Supabase Auth | Built-in, supports email/password + magic link, RLS integration |
-| File Storage | Supabase Storage | Photos + documents, 1GB free, CDN-backed |
-| ORM | Prisma | Type-safe DB access, schema-as-code, migrations |
-| Styling | Tailwind CSS + shadcn/ui | Mobile-first, accessible components, no design system to build |
-| Hosting | Vercel | Auto-deploy from GitHub, edge CDN, free for personal projects |
-| DNS | Cloudflare (sousacloud.com) | Point `ocia.sousacloud.com` CNAME to Vercel |
-| Excel Export | xlsx (SheetJS) | Client-side Excel generation |
-| PDF / Print | Browser print CSS | Printable rosters using CSS print media queries |
+| Framework | Next.js 16.2.6 (App Router) | `params`/`searchParams` are `Promise<{}>` — always awaited |
+| Database | PostgreSQL via Supabase | Managed, free tier |
+| Auth | Supabase Auth (email + password) | Service role used for admin account management |
+| File Storage | Supabase Storage | `participant-photos` bucket (public, 5 MB limit, JPEG/PNG/WebP) |
+| ORM | Prisma 6.x | `db push` for dev; `migrate deploy` for production |
+| Styling | Tailwind CSS | Plain Tailwind — no component library |
+| Hosting | Vercel | Auto-deploy on push to `master` |
+| DNS | Cloudflare | `ocia` CNAME → Vercel |
+| Excel Export | SheetJS (xlsx) | Client-side, no server overhead |
+| Print | Browser CSS print media | Roster print suppresses nav and screen-only sections |
+
+> **Note:** shadcn/ui was removed from the stack — plain Tailwind CSS was sufficient and kept the bundle lighter.
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ```
-ocia.sousacloud.com
-       │
-   Vercel Edge
-       │
-  Next.js App
-  ┌────────────────────────────────┐
-  │  App Router                    │
-  │  /app/(public)/register        │  ← Public intake form
-  │  /app/(auth)/dashboard         │  ← Admin/Volunteer views
-  │  /app/(auth)/participants/...  │
-  │  /app/(auth)/sessions/...      │
-  │  /app/(auth)/attendance/...    │
-  │  /app/(auth)/reports/...       │
-  │  /app/api/...                  │  ← Server Actions + API routes
-  └────────────────────────────────┘
-       │
-  Supabase (managed)
-  ├── PostgreSQL DB  (Prisma ORM)
-  ├── Auth           (email + magic link)
-  └── Storage        (photos, documents)
+https://ocia.sousacloud.com
+          │
+      Vercel Edge
+          │
+     Next.js 16 App
+  ┌──────────────────────────────────┐
+  │  App Router                      │
+  │  /register            (public)   │  ← Public intake form
+  │  /login               (public)   │  ← Email + password login
+  │  /(auth)/dashboard               │
+  │  /(auth)/participants/...        │
+  │  /(auth)/sessions/...            │
+  │  /(auth)/attendance/...          │
+  │  /(auth)/reports/...             │
+  │  /(auth)/settings/...            │
+  │                                  │
+  │  proxy.ts  ← session middleware  │  ← Replaces Next.js middleware.ts
+  │  app/actions/*.ts  ← Server Actions │
+  └──────────────────────────────────┘
+          │
+     Supabase (managed)
+     ├── PostgreSQL  (Prisma ORM)
+     ├── Auth        (email + password, admin creates accounts)
+     └── Storage     (participant-photos bucket)
 ```
 
 ---
 
-## Database Schema (Prisma)
-
-Full schema with all design decisions incorporated:
+## Database Schema (Current)
 
 ```prisma
-// Enums
-enum Role            { ADMIN VOLUNTEER }
-enum Group           { ENGLISH SPANISH }
+enum Role             { ADMIN VOLUNTEER }
+enum Group            { ENGLISH SPANISH }
 enum ParticipantStatus { ACTIVE INACTIVE WITHDRAWN }
-enum OciaStage       { INQUIRY CATECHUMEN CANDIDATE ELECT MYSTAGOGY COMPLETED }
-enum SessionType     { WEEKLY REFLECTION }
-enum SessionStatus   { PLANNED COMPLETED CANCELLED }
+enum OciaStage        { INQUIRY CATECHUMEN CANDIDATE ELECT MYSTAGOGY COMPLETED }
+enum SessionType      { WEEKLY REFLECTION }
+enum SessionStatus    { PLANNED COMPLETED CANCELLED }
 enum AttendanceStatus { PRESENT ABSENT LATE LEFT_EARLY EXCUSED }
-enum DocumentType    { BAPTISM_CERT MARRIAGE_DOC OTHER }
 
-// Staff login accounts (separate from Participant)
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  role      Role     @default(VOLUNTEER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  // supabaseUserId links to Supabase Auth
-  supabaseUserId String @unique
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String
+  role           Role     @default(VOLUNTEER)
+  supabaseUserId String   @unique
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
-// One record per OCIA year (e.g., "OCIA 2025–2026")
 model Cycle {
   id                     String        @id @default(cuid())
-  year                   Int           // e.g., 2026 (the graduation year)
-  name                   String        // e.g., "OCIA 2025–2026"
+  year                   Int
+  name                   String
   startDate              DateTime?
   endDate                DateTime?
   isCurrent              Boolean       @default(false)
@@ -92,87 +92,93 @@ model Cycle {
   participants           Participant[]
 }
 
-// Sponsors are their own entity (external parishioners)
-model Sponsor {
-  id                  String        @id @default(cuid())
-  name                String
-  phone               String?
-  email               String?
-  eligibilityVerified Boolean       @default(false)
-  notes               String?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
-  participants        Participant[]
-}
-
 model Participant {
-  id              String            @id @default(cuid())
+  id            String            @id @default(cuid())
   // Identity
-  firstName       String
-  lastName        String
-  fullName        String            // computed or entered; used for display/search
-  preferredName   String?
-  dateOfBirth     DateTime?
-  photoUrl        String?           // Supabase Storage path
+  firstName     String
+  lastName      String
+  maidenName    String?
+  fullName      String
+  preferredName String?
+  dateOfBirth   DateTime?
+  placeOfBirth  String?
+  photoUrl      String?
   // Contact
-  phone           String?
-  email           String?
-  address         String?
+  phone         String?
+  phoneWork     String?
+  email         String?
+  address       String?
+  city          String?
+  state         String?
+  zipCode       String?
+  // Family & Work
+  spouseName    String?
+  occupation    String?
   // Background
   currentReligion String?
   maritalStatus   String?
+  // Admin
+  interviewDate DateTime?
+  notes         String?
   // OCIA placement
-  group           Group
-  status          ParticipantStatus @default(ACTIVE)
-  ociaStage       OciaStage         @default(INQUIRY)
+  group         Group
+  status        ParticipantStatus @default(ACTIVE)
+  ociaStage     OciaStage         @default(INQUIRY)
+  sponsorName   String?
   // Relations
-  cycleId         String
-  cycle           Cycle             @relation(fields: [cycleId], references: [id])
-  sponsorId       String?
-  sponsor         Sponsor?          @relation(fields: [sponsorId], references: [id])
+  cycleId       String
+  cycle         Cycle             @relation(fields: [cycleId], references: [id])
   sacramentalRecord SacramentalRecord?
   documents       Document[]
   attendanceRecords AttendanceRecord[]
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
 }
 
 model SacramentalRecord {
-  id                    String      @id @default(cuid())
-  participantId         String      @unique
-  participant           Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  id                      String      @id @default(cuid())
+  participantId           String      @unique
+  participant             Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   // Baptism
-  isBaptized            Boolean?
-  baptismDate           DateTime?
-  baptismParish         String?
-  baptismCertReceived   Boolean     @default(false)
+  isBaptized              Boolean?
+  baptismDenomination     String?
+  baptismDate             DateTime?
+  baptismParish           String?
+  baptismCertReceived     Boolean     @default(false)
   // Sacraments
-  hasFirstCommunion     Boolean?
-  hasConfirmation       Boolean?
-  // Marriage / family status
-  marriageStatus        String?     // Single, Married, Divorced, Widowed
-  marriageCertReceived  Boolean     @default(false)
-  annulmentStatus       String?     // None, Pending, Granted
+  hasFirstCommunion       Boolean?
+  hasConfirmation         Boolean?
+  // Marriage
+  marriageStatus          String?
+  marriedToCatholic       Boolean?
+  marriedByCatholicPriest Boolean?
+  hadPriorMarriage        Boolean?
+  spouseHadPriorMarriage  Boolean?
+  marriageCertReceived    Boolean     @default(false)
+  annulmentStatus         String?
+  // Children
+  hasChildren             Boolean?
+  childrenNotes           String?
   // OCIA milestones
-  riteOfAcceptanceDate  DateTime?
-  electionDate          DateTime?
-  easterVigilDate       DateTime?
-  // Completion
-  completedAt           DateTime?
-  updatedAt             DateTime    @updatedAt
+  riteOfAcceptanceDate    DateTime?
+  electionDate            DateTime?
+  easterVigilDate         DateTime?
+  completedAt             DateTime?
+  updatedAt               DateTime    @updatedAt
 }
 
 model Session {
-  id          String           @id @default(cuid())
-  cycleId     String
-  cycle       Cycle            @relation(fields: [cycleId], references: [id])
-  number      Int              // 1–30 for weekly; 1–4 for reflection
-  title       String?
-  date        DateTime?
-  type        SessionType      @default(WEEKLY)
-  status      SessionStatus    @default(PLANNED)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id        String           @id @default(cuid())
+  cycleId   String
+  cycle     Cycle            @relation(fields: [cycleId], references: [id])
+  number    Int
+  title     String?
+  presenter String?
+  date      DateTime?
+  type      SessionType      @default(WEEKLY)
+  status    SessionStatus    @default(PLANNED)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
   attendanceRecords AttendanceRecord[]
   @@unique([cycleId, type, number])
 }
@@ -193,9 +199,8 @@ model Document {
   id            String       @id @default(cuid())
   participantId String
   participant   Participant  @relation(fields: [participantId], references: [id], onDelete: Cascade)
-  type          DocumentType
   fileName      String
-  storageUrl    String       // Supabase Storage path
+  storageUrl    String
   uploadedAt    DateTime     @default(now())
 }
 ```
@@ -204,203 +209,121 @@ model Document {
 
 ## Development Phases
 
----
-
-### Phase 0 — Project Foundation (Week 1)
-
-**Goal:** Working skeleton deployed to production URL before writing any features.
-
-- [ ] Create GitHub repository (`ocia-management`)
-- [ ] Scaffold Next.js 15 project with TypeScript
-  ```bash
-  npx create-next-app@latest ocia-management --typescript --tailwind --app
-  ```
-- [ ] Install and configure shadcn/ui
-- [ ] Create Supabase project at supabase.com
-  - Note project URL and anon/service keys
-- [ ] Install Prisma, configure `DATABASE_URL` from Supabase connection string
-- [ ] Write initial Prisma schema (all tables, enums, relations)
-- [ ] Run first migration, verify schema in Supabase dashboard
-- [ ] Set up Supabase Auth (email provider, disable email confirmation for internal use)
-- [ ] Create Vercel project, link to GitHub repo
-- [ ] Add environment variables to Vercel (`NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`)
-- [ ] Configure custom domain: `ocia.sousacloud.com`
-  - In Vercel: Add domain under project settings
-  - In Cloudflare: Add CNAME `ocia` → `cname.vercel-dns.com`
-- [ ] Confirm `https://ocia.sousacloud.com` loads the Next.js default page
-- [ ] Seed development data (2 admin users, 2 volunteer users, 10 test participants)
-
-**Exit criteria:** Any push to `main` auto-deploys to `ocia.sousacloud.com`.
+### Phase 0 — Project Foundation ✅
+- [x] Scaffold Next.js 16.2.6 project (TypeScript, Tailwind, App Router)
+- [x] Create Supabase project (PostgreSQL + Auth + Storage)
+- [x] Configure Prisma with Supabase connection pooler
+- [x] Write initial schema, run first migration
+- [x] Create GitHub repository (`jucadesousa/ocia-management`)
+- [x] Connect Vercel to GitHub — auto-deploy on push to `master`
+- [x] Configure custom domain `ocia.sousacloud.com` via Cloudflare
+- [x] Add all environment variables to Vercel
 
 ---
 
-### Phase 1 — Auth + Shell (Week 1–2)
-
-**Goal:** Logged-in users see the correct shell for their role. Non-authenticated routes redirect to login.
-
-- [ ] Login page (`/login`) — email + password via Supabase Auth
-- [ ] Auth middleware (Next.js middleware.ts) — protect all `/dashboard/*` routes
-- [ ] Session cookie / server-side auth check with Supabase SSR client
-- [ ] Role resolution — after login, read `User.role` from DB, store in session
-- [ ] Navigation shell
+### Phase 1 — Auth + Shell ✅
+- [x] Login page (`/login`) — email + password via Supabase Auth
+- [x] `proxy.ts` session middleware — protects all `/(auth)/*` routes
+- [x] Role resolution — reads `User.role` from DB after login
+- [x] Responsive navigation shell (hamburger on mobile, sidebar on desktop)
   - Admin nav: Dashboard, Participants, Sessions, Attendance, Reports, Settings
-  - Volunteer nav: Dashboard, Attendance, Participants (read-only)
-- [ ] Role-based route guards (middleware blocks volunteers from admin-only pages)
-- [ ] Basic dashboard page (placeholder cards for now)
-- [ ] User management page (Admin only) — create staff accounts, assign roles
-
-**Exit criteria:** Admin and Volunteer logins land on appropriate dashboards with correct nav.
-
----
-
-### Phase 2 — Participant Management (Week 2–3)
-
-**Goal:** Full CRUD for participants including photo upload.
-
-#### 2A — Participant List
-- [ ] `/participants` page — filterable/searchable table
-  - Filters: group, OCIA stage, status
-  - Search: name, email, phone
-  - Columns: name, group, stage, status, attendance %
-- [ ] Pagination (50 per page)
-- [ ] Export to Excel button (participant list)
-
-#### 2B — Participant Detail Page
-- [ ] `/participants/[id]` — tabbed layout
-  - **Profile tab:** all contact and demographic fields
-  - **Sacramental tab:** full sacramental record + document uploads
-  - **Attendance tab:** attendance history for this participant
-- [ ] Stage suggestion indicator (non-blocking): shows "Suggested: Catechumen" if unbaptized, etc.
-- [ ] Admin: edit all fields. Volunteer: read-only view.
-
-#### 2C — Participant Create/Edit
-- [ ] `/participants/new` — internal staff entry form
-- [ ] Photo upload to Supabase Storage, preview thumbnail
-- [ ] Document upload (Baptism cert, Marriage doc) to Supabase Storage
-- [ ] Server Action validation (required fields: name, group, date of birth)
-
-#### 2D — Public Intake Form
-- [ ] `/register` — publicly accessible (no auth required)
-- [ ] Minimal fields: name, email, phone, address, group preference
-- [ ] On submit: creates Participant with status ACTIVE, stage INQUIRY
-- [ ] Confirmation message (no email yet — out of scope MVP)
-- [ ] Admin notification option: new registrations appear in a "Pending Review" queue on dashboard
-
-**Exit criteria:** Admin can create, edit, view participants with photo. Public form creates records visible to admin.
+  - Volunteer nav: Dashboard, Attendance, Participants
+- [x] Role-based server-side guards (`requireAuth()` in `lib/dal.ts`)
+- [x] Dashboard with real live stats (active participants, sessions, at-risk count)
+- [x] Loading skeletons for all major pages
+- [x] Error boundary (`error.tsx`) and custom 404 page
 
 ---
 
-### Phase 3 — Session Management (Week 3)
+### Phase 2 — Participant Management ✅
+- [x] `/participants` — searchable, filterable list with pagination (50/page)
+  - Mobile: card layout (avatar + name + badges)
+  - Desktop: full table with avatar, name, group, stage, status, attendance %
+- [x] Filters: group, OCIA stage, status, free-text search
+- [x] `/participants/[id]` — tabbed detail view
+  - **Profile tab:** all fields in sections (Identity, Contact, Family & Work, OCIA Placement, Admin)
+  - **Sacramental tab:** full sacramental record display + "Edit" button (admin only)
+  - **Attendance tab:** per-session attendance history with totals
+- [x] `/participants/new` — full intake form (admin only)
+- [x] `/participants/[id]/edit` — edit form with photo upload section
+- [x] `/participants/[id]/sacramental/edit` — dedicated sacramental record edit page
+- [x] Photo upload (Supabase Storage, `participant-photos` bucket, public CDN URL)
+- [x] Initials avatar displayed everywhere a photo is missing
+- [x] `/register` — public intake form (no auth required)
 
-**Goal:** Admin can create and manage all 30+ weekly sessions and reflection days.
-
-- [ ] `/sessions` — session list with status badges (Planned / Completed / Cancelled)
-  - Filter by type (Weekly / Reflection), status
-- [ ] Session create/edit modal
-  - Fields: number (1–30), title (optional), date, time, type, status
-  - No constraint between session number and date (flexible per requirements)
-- [ ] Session cancel (sets status = Cancelled, does not delete)
-- [ ] Bulk session creation helper — Admin can generate the 30 weekly sessions for a cycle at once with default dates that can be individually adjusted
-- [ ] Session detail page — shows roster + attendance summary for that session
-
-**Exit criteria:** Admin can manage the full session calendar for a cycle.
-
----
-
-### Phase 4 — Attendance System (Week 4)
-
-**Goal:** Volunteers can mark attendance quickly on mobile. Critical path feature.
-
-#### 4A — Attendance Marking (Volunteer + Admin)
-- [ ] `/attendance` — entry point: select session (most recent planned session pre-selected)
-- [ ] Group tab toggle: English | Spanish
-- [ ] Roster list — all active participants in selected group
-  - Large tap targets (mobile-first)
-  - Photo thumbnail next to name
-  - One-tap status cycle: Present → Absent → Late → Left Early → Excused → Present
-  - Default status is Absent until marked
-- [ ] Search/filter within roster for edge cases (cross-group visitor, makeup)
-- [ ] "Save Attendance" — bulk upsert all records
-- [ ] Visual indicator: unsaved changes warning before navigating away
-
-#### 4B — Attendance Editing (Admin Only)
-- [ ] `/attendance/[sessionId]` — editable attendance grid
-- [ ] Admin can change any status after the fact
-- [ ] Admin can add individual attendance record for any participant
-
-**Exit criteria:** Volunteer can select a session, mark full roster for a group in under 3 minutes on a phone.
+**Fields added beyond original plan:** `maidenName`, `placeOfBirth`, `phoneWork`, `city`, `state`, `zipCode`, `spouseName`, `occupation`, `interviewDate`, `notes`  
+**Sacramental fields added:** `baptismDenomination`, `marriedToCatholic`, `marriedByCatholicPriest`, `hadPriorMarriage`, `spouseHadPriorMarriage`, `hasChildren`, `childrenNotes`
 
 ---
 
-### Phase 5 — Reporting (Week 5)
-
-**Goal:** All high-priority reports live and exportable.
-
-#### 5A — Attendance Reports
-- [ ] Attendance per session (by group) — who was present/absent
-- [ ] Attendance per participant — session-by-session history
-- [ ] Attendance percentage per participant (present + late / total sessions)
-- [ ] At-risk participants — below configurable threshold (default: <75% attendance)
-- [ ] All exportable to Excel via SheetJS
-
-#### 5B — Ministry Reports
-- [ ] Participants by OCIA stage — counts + list view
-- [ ] Missing documents report — participants with no baptism cert or no photo
-- [ ] Sacrament readiness — admin-reviewed checklist view
-
-#### 5C — Operational Reports
-- [ ] Printable session roster — name + group, formatted for print (CSS print media)
-- [ ] Photo roster — 2×3 grid with photo + name, printable (for name tags)
-- [ ] Group contact list — name, phone, email for a group
-- [ ] Volunteer attendance sheet — blank grid for paper backup
-
-#### 5D — Parish / Diocese (Low Priority)
-- [ ] Summary stats: total participants, stage distribution, sacrament counts
-- [ ] These can be a single stats dashboard page
-
-**Exit criteria:** All high-priority reports render and export correctly.
+### Phase 3 — Session Management ✅
+- [x] `/sessions` — session list with type and status filters
+- [x] Sort: Weekly sessions before Reflections; ordered by number
+- [x] Session create/edit — number, title, presenter, date, type, status
+- [x] Session cancel (status = Cancelled, no delete)
+- [x] Bulk session creation — generates 30 weekly + N reflection sessions for a cycle (idempotent upsert via `@@unique([cycleId, type, number])`)
+- [x] Session detail page — attendance summary for that session
 
 ---
 
-### Phase 6 — Polish + Production Hardening (Week 6)
+### Phase 4 — Attendance System ✅
+- [x] `/attendance` — select session + group, mark attendance
+- [x] Defaults to next upcoming PLANNED session
+- [x] English / Spanish group toggle
+- [x] One-tap status cycle: Absent → Present → Late → Left Early → Excused → Absent
+- [x] Color-coded status indicators per card
+- [x] Search within roster (filters visible cards; hidden participants still saved)
+- [x] Sticky save bar with unsaved-changes counter
+- [x] `beforeunload` warning when changes are unsaved
+- [x] Bulk upsert via Server Action — all statuses saved in one request
 
-- [ ] Mobile UX audit — test all flows on iOS Safari and Android Chrome
-- [ ] Loading states and skeleton screens throughout
-- [ ] Error boundaries and user-friendly error messages
-- [ ] Row Level Security (RLS) policies in Supabase — defense in depth beyond middleware
-- [ ] Input sanitization audit
-- [ ] Image optimization — Next.js `<Image>` component for all photos
-- [ ] Supabase Storage bucket policies (private; served via signed URLs)
-- [ ] Environment secrets audit — no keys in client bundle
-- [ ] 404 and unauthorized pages
-- [ ] Accessibility pass — keyboard nav, focus management, color contrast
-- [ ] Final review with a parish volunteer (usability test)
+---
+
+### Phase 5 — Reports ✅
+- [x] **Attendance report** — per-participant summary, at-risk highlighting, Excel export
+- [x] **Session roster** — screen view (filled) + print view (blank volunteer sheet)
+  - Print CSS hides nav, header, and screen-only content
+  - Print button placed at the Blank Volunteer Sheet section
+- [x] **Contact list** — name, phone, email, address; Excel export
+- [x] **Ministry report** — participants by stage, at-risk list, missing photo flag; Excel export
+
+---
+
+### Phase 6 — Polish ✅
+- [x] Responsive hamburger navigation (mobile sidebar with backdrop overlay)
+- [x] Loading skeleton screens (participants, sessions, attendance, reports)
+- [x] Error boundary with retry button
+- [x] Custom 404 page
+- [x] Roster print fixed — blank sheet only, navigation suppressed
+- [x] Print button repositioned to Blank Volunteer Sheet section
+- [x] Dashboard wired to live database stats
+- [x] Settings — full user management (create accounts, set/reset passwords, change roles, remove)
+- [x] Settings — full cycle management (create, edit, set current)
+- [x] Participant list — responsive card layout on mobile (no horizontal scrolling)
+- [x] Git repository initialized, pushed to GitHub, connected to Vercel auto-deploy
 
 ---
 
 ## Deployment Pipeline
 
 ```
-Developer machine
+Developer machine (c:\Projects\ocia-management)
     │
-    git push origin main
+    git push origin master
     │
-GitHub repo (ocia-management)
+GitHub (jucadesousa/ocia-management)
     │
-Vercel (auto-deploy on push to main)
-    ├── Runs `prisma migrate deploy`  ← via postbuild script
-    ├── Builds Next.js
-    └── Deploys to ocia.sousacloud.com
+Vercel (auto-deploy on push to master)
+    ├── npm install
+    ├── next build  (TypeScript check + Turbopack)
+    └── Deploy to ocia.sousacloud.com
               │
          Supabase (always-on)
-         ├── PostgreSQL
-         └── Storage
+         ├── PostgreSQL (Prisma, transaction pooler port 6543)
+         └── Storage (participant-photos, public bucket)
 ```
 
-**Branch strategy:**
-- `main` → production (`ocia.sousacloud.com`)
-- `dev` → Vercel preview URL (safe to test without affecting parish users)
-- Feature branches → PR previews (auto-generated Vercel URLs)
+**Branch:** `master` → production (`ocia.sousacloud.com`)
 
 ---
 
@@ -409,26 +332,10 @@ Vercel (auto-deploy on push to main)
 | Variable | Where | Purpose |
 |---|---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | Vercel + local | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel + local | Public Supabase key (RLS enforced) |
-| `SUPABASE_SERVICE_ROLE_KEY` | Vercel only | Server-side admin operations |
-| `DATABASE_URL` | Vercel + local | Prisma connection string (Supabase pooler) |
-| `DIRECT_URL` | Vercel + local | Prisma direct URL for migrations |
-| `NEXTAUTH_SECRET` | Vercel + local | Session signing (if using NextAuth alongside Supabase) |
-
----
-
-## Estimated Timeline
-
-| Phase | Duration | Milestone |
-|---|---|---|
-| 0 — Foundation | 3–4 days | Live skeleton at ocia.sousacloud.com |
-| 1 — Auth + Shell | 3–4 days | Login, roles, navigation working |
-| 2 — Participants | 5–7 days | Full participant CRUD + public form |
-| 3 — Sessions | 2–3 days | Session calendar management |
-| 4 — Attendance | 4–5 days | Volunteer attendance marking live |
-| 5 — Reports | 4–5 days | All high-priority reports + exports |
-| 6 — Polish | 3–4 days | Production-ready, mobile-tested |
-| **Total** | **~6 weeks** | **MVP complete** |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Vercel + local | Public key (client-side Supabase client) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Vercel + local | Server-side admin operations (account creation, storage) |
+| `DATABASE_URL` | Vercel + local | Prisma connection (transaction pooler, port 6543, `?pgbouncer=true`) |
+| `DIRECT_URL` | Vercel + local | Prisma direct URL for migrations (session pooler, port 5432) |
 
 ---
 
@@ -436,36 +343,35 @@ Vercel (auto-deploy on push to main)
 
 | Decision | Choice | Reason |
 |---|---|---|
-| Monorepo vs. separate repos | Monorepo (single Next.js app) | Simpler for solo maintenance |
-| Server Actions vs. REST API | Server Actions (Next.js) | Less boilerplate, type-safe end-to-end |
-| Supabase Auth vs. NextAuth | Supabase Auth primary | Integrates with RLS, fewer moving parts |
-| ORM | Prisma | Type safety, auto-generated types, migration tooling |
-| Cycle support | Multi-cycle from day one | One extra FK; avoids painful migration when year 2 arrives |
-| Sponsor model | Free-text `sponsorName` on `Participant` | Parish does not maintain a sponsor database; a name field is sufficient |
-| Staff account creation | Admin-only creation | Security; prevents unauthorized volunteer self-registration |
+| Monorepo | Single Next.js app | Simpler for solo maintenance |
+| Server Actions vs REST | Server Actions | Less boilerplate, type-safe end-to-end |
+| Supabase Auth | Email + password only | Magic link not needed for internal parish staff |
+| Staff account creation | Admin creates with password | No self-registration; admin sets/resets passwords via `supabase.auth.admin` |
+| Sponsor model | Free-text `sponsorName` on Participant | Parish does not maintain a sponsor database |
+| Component library | Plain Tailwind CSS (no shadcn/ui) | Sufficient for the UI needed; fewer dependencies |
+| Middleware | `proxy.ts` (not `middleware.ts`) | Next.js 16 deprecates `middleware.ts`; `proxy.ts` is the new convention |
+| `params`/`searchParams` | Always awaited (`await params`) | Next.js 16 breaking change — they are Promises |
+| Prisma dev workflow | `db push` (not `migrate dev`) | Non-TTY shell; `migrate dev` requires interactive TTY |
 | At-risk threshold | Configurable on `Cycle` | Director may adjust threshold each year |
-| Name tag format | Avery badge-size print CSS | Direct label printing; no external tool needed |
-| PDF generation | Browser print CSS | No server-side PDF library needed for rosters |
-| Excel export | Client-side SheetJS | No server overhead, instant download |
-| Real-time attendance sync | Not in MVP | Single-volunteer use case, optimistic UI sufficient |
+| Session sort order | JS re-sort after Prisma query | Prisma `orderBy type asc` gives REFLECTION before WEEKLY alphabetically |
+| Attendance hidden inputs | All participants, not just visible | Prevents losing unsaved records when search filters the roster |
+| Print roster | CSS `@media print` + `no-print` class | No server PDF library; browser print CSS sufficient |
+| Excel export | Client-side SheetJS | No server overhead; instant download |
+| Participant list mobile | Card layout below `md:` breakpoint | Full table wider than phone screen; cards are more readable |
+| Photo storage | Supabase Storage, public bucket | Simple CDN URL stored in `participant.photoUrl`; no signed URLs needed for MVP |
 
 ---
 
-## Design Decisions (Resolved)
+## Post-MVP Backlog
 
-| # | Question | Decision |
+| Feature | Priority | Notes |
 |---|---|---|
-| 1 | Cycle management | **Multi-cycle.** `Cycle` table with `year`, `name`, `isCurrent`. Sessions and participants FK to a Cycle. |
-| 2 | Staff account creation | **Admin creates accounts only.** No self-registration. Admin → Settings → Users → Create. Supabase sends set-password email. |
-| 3 | Sponsor tracking | **Free-text field on `Participant`.** `sponsorName String?`. Parish does not maintain a sponsor database; no separate entity needed. |
-| 4 | At-risk threshold | **Configurable per cycle.** Stored as `atRiskThresholdPercent` on the `Cycle` record. Default: 75%. Admin editable in Cycle settings. |
-| 5 | Name tags | **Badge-sized printable labels.** Avery-compatible layout (photo + name + cycle year). Print-ready page with CSS `@page` sizing. |
-
----
-
-## Next Steps
-
-1. Answer the open questions above
-2. Create GitHub repository
-3. Begin Phase 0 — Foundation Setup
-4. First commit: scaffolded Next.js app deploying to ocia.sousacloud.com
+| Document uploads (baptism cert, marriage doc) | High | Storage bucket + Document model already in schema |
+| Stage auto-suggestions | Medium | Advisory only; show suggested stage based on sacramental data |
+| Photo roster / name tags | Medium | Avery-compatible print layout |
+| RLS policies in Supabase | Medium | Defense-in-depth beyond middleware |
+| Participant self-service portal | Low | View own profile, update limited fields |
+| QR code / self check-in | Low | Reduce volunteer workload on busy nights |
+| Email notifications | Low | New registration alerts, upcoming session reminders |
+| Offline attendance mode | Low | PWA with service worker for poor connectivity |
+| Diocese reporting export | Low | Summary stats per cycle |
