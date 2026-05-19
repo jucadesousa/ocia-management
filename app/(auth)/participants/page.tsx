@@ -124,17 +124,9 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
         {participants.length === 0 ? (
           <div className="p-8 text-center text-gray-400 text-sm">No participants found.</div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                {["Name", "Group", "Stage", "Status", "Attendance"].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+          <>
+            {/* Mobile card list */}
+            <ul className="md:hidden divide-y divide-gray-100">
               {participants.map((p) => {
                 const attended = p.attendanceRecords.length;
                 const pct = completedSessions > 0
@@ -143,58 +135,122 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
                 const atRisk = pct !== null && pct < cycle.atRiskThresholdPercent;
 
                 return (
-                  <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3">
-                      <Link href={`/participants/${p.id}`} className="flex items-center gap-3 group w-fit">
-                        {p.photoUrl ? (
-                          <img
-                            src={p.photoUrl}
-                            alt={p.fullName}
-                            className="w-8 h-8 rounded-full object-cover border border-gray-200 shrink-0"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700 shrink-0 select-none">
-                            {initials(p.fullName)}
-                          </div>
-                        )}
-                        <div>
-                          <span className="font-medium text-gray-900 group-hover:text-blue-600">
-                            {p.fullName}
-                          </span>
+                  <li key={p.id}>
+                    <Link href={`/participants/${p.id}`} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                      {p.photoUrl ? (
+                        <img
+                          src={p.photoUrl}
+                          alt={p.fullName}
+                          className="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-700 shrink-0 select-none">
+                          {initials(p.fullName)}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-medium text-gray-900 truncate">{p.fullName}</span>
                           {p.preferredName && (
-                            <span className="ml-1 text-xs text-gray-400">({p.preferredName})</span>
+                            <span className="text-xs text-gray-400">({p.preferredName})</span>
                           )}
                         </div>
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">
-                      {p.group === "ENGLISH" ? "English" : "Spanish"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${stageBadge[p.ociaStage]}`}>
-                        {stageLabel[p.ociaStage]}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[p.status]}`}>
-                        {p.status.charAt(0) + p.status.slice(1).toLowerCase()}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      {pct === null ? (
-                        <span className="text-gray-400">—</span>
-                      ) : (
-                        <span className={atRisk ? "font-semibold text-red-600" : "text-gray-700"}>
-                          {pct}%
-                          {atRisk && <span className="ml-1 text-xs">⚠</span>}
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                          <span className={`inline-flex px-1.5 py-0.5 rounded-full text-xs font-medium ${stageBadge[p.ociaStage]}`}>
+                            {stageLabel[p.ociaStage]}
+                          </span>
+                          <span className={`inline-flex px-1.5 py-0.5 rounded-full text-xs font-medium ${statusBadge[p.status]}`}>
+                            {p.status.charAt(0) + p.status.slice(1).toLowerCase()}
+                          </span>
+                          <span className="text-xs text-gray-400">
+                            {p.group === "ENGLISH" ? "EN" : "ES"}
+                          </span>
+                        </div>
+                      </div>
+                      {pct !== null && (
+                        <span className={`text-sm font-semibold shrink-0 ${atRisk ? "text-red-600" : "text-gray-500"}`}>
+                          {pct}%{atRisk && " ⚠"}
                         </span>
                       )}
-                    </td>
-                  </tr>
+                    </Link>
+                  </li>
                 );
               })}
+            </ul>
+
+            {/* Desktop table */}
+            <table className="hidden md:table w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  {["Name", "Group", "Stage", "Status", "Attendance"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {participants.map((p) => {
+                  const attended = p.attendanceRecords.length;
+                  const pct = completedSessions > 0
+                    ? Math.round((attended / completedSessions) * 100)
+                    : null;
+                  const atRisk = pct !== null && pct < cycle.atRiskThresholdPercent;
+
+                  return (
+                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-3">
+                        <Link href={`/participants/${p.id}`} className="flex items-center gap-3 group w-fit">
+                          {p.photoUrl ? (
+                            <img
+                              src={p.photoUrl}
+                              alt={p.fullName}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700 shrink-0 select-none">
+                              {initials(p.fullName)}
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-medium text-gray-900 group-hover:text-blue-600">
+                              {p.fullName}
+                            </span>
+                            {p.preferredName && (
+                              <span className="ml-1 text-xs text-gray-400">({p.preferredName})</span>
+                            )}
+                          </div>
+                        </Link>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {p.group === "ENGLISH" ? "English" : "Spanish"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${stageBadge[p.ociaStage]}`}>
+                          {stageLabel[p.ociaStage]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[p.status]}`}>
+                          {p.status.charAt(0) + p.status.slice(1).toLowerCase()}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {pct === null ? (
+                          <span className="text-gray-400">—</span>
+                        ) : (
+                          <span className={atRisk ? "font-semibold text-red-600" : "text-gray-700"}>
+                            {pct}%
+                            {atRisk && <span className="ml-1 text-xs">⚠</span>}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
             </tbody>
           </table>
+          </>
         )}
       </div>
 
