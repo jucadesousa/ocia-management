@@ -147,9 +147,6 @@ export default async function RosterPage({
             <h1 className="text-2xl font-bold text-gray-900">Session Roster</h1>
             <p className="text-sm text-gray-500 mt-0.5">{cycle.name}</p>
           </div>
-          <PrintButton className="text-sm font-medium px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors shrink-0">
-            Print roster
-          </PrintButton>
         </div>
 
         <Suspense>
@@ -260,11 +257,16 @@ export default async function RosterPage({
           </p>
         </div>
 
-        <div className="no-print mb-3">
-          <h2 className="text-lg font-semibold text-gray-900">Blank Volunteer Sheet</h2>
-          <p className="text-sm text-gray-500">
-            P = Present · A = Absent · L = Late · LE = Left Early · E = Excused
-          </p>
+        <div className="no-print mb-3 flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Blank Volunteer Sheet</h2>
+            <p className="text-sm text-gray-500">
+              P = Present · A = Absent · L = Late · LE = Left Early · E = Excused
+            </p>
+          </div>
+          <PrintButton className="text-sm font-medium px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors shrink-0">
+            Print
+          </PrintButton>
         </div>
 
         <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
