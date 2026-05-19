@@ -118,6 +118,17 @@ export async function updateParticipant(
   redirect(`/participants/${id}`);
 }
 
+export async function deleteParticipant(id: string): Promise<void> {
+  const user = await requireAuth();
+  if (user.role !== "ADMIN") return;
+
+  await prisma.attendanceRecord.deleteMany({ where: { participantId: id } });
+  await prisma.participant.delete({ where: { id } });
+
+  revalidatePath("/participants");
+  redirect("/participants");
+}
+
 function yesNo(formData: FormData, key: string): boolean | null {
   const val = formData.get(key) as string;
   if (val === "yes") return true;

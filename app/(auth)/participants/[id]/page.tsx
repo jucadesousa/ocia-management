@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
+import { DeleteParticipantButton } from "./_components/delete-button";
 import type { OciaStage } from "@prisma/client";
 
 type Props = {
@@ -132,12 +133,15 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
           </div>
         </div>
         {user.role === "ADMIN" && (
-          <Link
-            href={`/participants/${id}/edit`}
-            className="shrink-0 text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Edit
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/participants/${id}/edit`}
+              className="shrink-0 text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Edit
+            </Link>
+            <DeleteParticipantButton id={id} name={participant.fullName} />
+          </div>
         )}
       </div>
 
