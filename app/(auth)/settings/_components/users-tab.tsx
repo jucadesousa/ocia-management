@@ -26,7 +26,7 @@ function SetPasswordForm({ user, onDone }: { user: User; onDone: () => void }) {
   }
 
   return (
-    <form action={formAction} className="mt-2 flex items-end gap-2">
+    <form action={formAction} className="mt-3 flex items-end gap-2">
       <div className="flex-1">
         <label htmlFor={`pwd-${user.id}`} className="block text-xs font-medium text-gray-600 mb-1">
           New password
@@ -50,13 +50,6 @@ function SetPasswordForm({ user, onDone }: { user: User; onDone: () => void }) {
         className="shrink-0 bg-gray-800 text-white text-xs font-medium px-3 py-2 rounded-lg hover:bg-gray-900 disabled:opacity-60 transition-colors"
       >
         {pending ? "Saving…" : "Set password"}
-      </button>
-      <button
-        type="button"
-        onClick={onDone}
-        className="shrink-0 text-xs text-gray-500 hover:text-gray-700"
-      >
-        Cancel
       </button>
     </form>
   );
@@ -156,16 +149,16 @@ export function UsersTab({
         ) : (
           <ul className="divide-y divide-gray-100">
             {users.map((u) => (
-              <li key={u.id} className="px-5 py-4">
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 min-w-0">
+              <li key={u.id} className="px-4 py-4">
+                {/* Top row: name + role badge/selector */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{u.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{u.email}</p>
+                    <p className="text-xs text-gray-500 truncate mt-0.5">{u.email}</p>
                   </div>
 
-                  {/* Role selector */}
                   {u.id !== currentUserId ? (
-                    <form action={updateUserRole.bind(null, u.id)}>
+                    <form action={updateUserRole.bind(null, u.id)} className="shrink-0">
                       <select
                         name="role"
                         defaultValue={u.role}
@@ -180,24 +173,22 @@ export function UsersTab({
                       </select>
                     </form>
                   ) : (
-                    <span className="text-xs px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                    <span className="shrink-0 text-xs px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
                       {u.role === "ADMIN" ? "Admin" : "Volunteer"} (you)
                     </span>
                   )}
+                </div>
 
-                  {/* Set password */}
-                  {u.id !== currentUserId && (
+                {/* Action buttons row */}
+                {u.id !== currentUserId && (
+                  <div className="flex items-center gap-4 mt-2.5">
                     <button
                       type="button"
                       onClick={() => setPwdUserId(pwdUserId === u.id ? null : u.id)}
                       className="text-xs text-gray-500 hover:text-gray-800 font-medium"
                     >
-                      Set password
+                      {pwdUserId === u.id ? "Cancel" : "Set password"}
                     </button>
-                  )}
-
-                  {/* Remove */}
-                  {u.id !== currentUserId && (
                     <form action={removeUser.bind(null, u.id)}>
                       <button
                         type="submit"
@@ -211,8 +202,8 @@ export function UsersTab({
                         Remove
                       </button>
                     </form>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Inline set-password form */}
                 {pwdUserId === u.id && (
