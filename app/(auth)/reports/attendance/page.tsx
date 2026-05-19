@@ -13,6 +13,22 @@ const stageLabel: Record<OciaStage, string> = {
   COMPLETED: "Completed",
 };
 
+const statusLetter: Record<string, string> = {
+  PRESENT: "P",
+  LATE: "L",
+  LEFT_EARLY: "LE",
+  EXCUSED: "E",
+  ABSENT: "A",
+};
+
+const statusCellClass: Record<string, string> = {
+  PRESENT: "text-green-700",
+  LATE: "text-amber-600",
+  LEFT_EARLY: "text-orange-600",
+  EXCUSED: "text-blue-600",
+  ABSENT: "text-red-600 font-semibold",
+};
+
 type SearchParams = Promise<{ group?: string }>;
 
 export default async function AttendanceReportPage({
@@ -34,7 +50,7 @@ export default async function AttendanceReportPage({
 
   const threshold = cycle.atRiskThresholdPercent ?? 75;
 
-  const [sessions, participants] = await Promise.all([
+  const [rawSessions, participants] = await Promise.all([
     prisma.session.findMany({
       where: { cycleId: cycle.id, status: "COMPLETED" },
       orderBy: [{ type: "asc" }, { number: "asc" }],
@@ -44,16 +60,21 @@ export default async function AttendanceReportPage({
       include: {
         attendanceRecords: {
           where: { session: { status: "COMPLETED" } },
-          include: {
-            session: { select: { number: true, type: true } },
-          },
         },
       },
       orderBy: { lastName: "asc" },
     }),
   ]);
 
+  // WEEKLY before REFLECTION
+  const sessions = [...rawSessions].sort((a, b) => {
+    const order = (a.type === "WEEKLY" ? 0 : 1) - (b.type === "WEEKLY" ? 0 : 1);
+    return order !== 0 ? order : a.number - b.number;
+  });
+
   const totalSessions = sessions.length;
+
+  // ── Summary rows (only ABSENT counts as not present) ──────────────────────
 
   type ParticipantRow = {
     id: string;
@@ -67,9 +88,7 @@ export default async function AttendanceReportPage({
   };
 
   const rows: ParticipantRow[] = participants.map((p) => {
-    const attended = p.attendanceRecords.filter(
-      (r) => r.status === "PRESENT" || r.status === "LATE"
-    ).length;
+    const attended = p.attendanceRecords.filter((r) => r.status !== "ABSENT").length;
     const total = totalSessions;
     const pct = total > 0 ? Math.round((attended / total) * 100) : null;
     const atRisk = pct !== null && pct < threshold;
@@ -86,8 +105,6 @@ export default async function AttendanceReportPage({
   });
 
   const atRiskRows = rows.filter((r) => r.atRisk);
-
-  // Sort: at-risk first, then by name
   const sortedRows = [...rows].sort((a, b) => {
     if (a.atRisk && !b.atRisk) return -1;
     if (!a.atRisk && b.atRisk) return 1;
@@ -101,7 +118,24 @@ export default async function AttendanceReportPage({
     return "font-semibold text-green-600";
   }
 
-  const exportData = sortedRows.map((r) => ({
+  // ── Pivot data ─────────────────────────────────────────────────────────────
+
+  // participantId → sessionId → status
+  const pivotMap: Record<string, Record<string, string>> = {};
+  for (const p of participants) {
+    pivotMap[p.id] = {};
+    for (const rec of p.attendanceRecords) {
+      pivotMap[p.id][rec.sessionId] = rec.status;
+    }
+  }
+
+  function sessionLabel(type: string, number: number) {
+    return type === "WEEKLY" ? String(number) : `R${number}`;
+  }
+
+  // ── Exports ────────────────────────────────────────────────────────────────
+
+  const summaryExportData = sortedRows.map((r) => ({
     Name: r.fullName,
     Group: r.group,
     Stage: stageLabel[r.ociaStage],
@@ -109,6 +143,23 @@ export default async function AttendanceReportPage({
     Total: r.total,
     "%": r.pct ?? "N/A",
   }));
+
+  const pivotExportData = participants.map((p) => {
+    const rec = pivotMap[p.id];
+    const attended = sessions.filter((s) => rec[s.id] && rec[s.id] !== "ABSENT").length;
+    const pct = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : null;
+    const entry: Record<string, string | number> = {
+      Name: p.fullName,
+      Group: p.group === "ENGLISH" ? "English" : "Spanish",
+    };
+    for (const s of sessions) {
+      entry[sessionLabel(s.type, s.number)] = statusLetter[rec[s.id]] ?? "";
+    }
+    entry["%"] = pct ?? "N/A";
+    return entry;
+  });
+
+  // ── Shared summary table ───────────────────────────────────────────────────
 
   function AttendanceTable({ data }: { data: ParticipantRow[] }) {
     return (
@@ -126,7 +177,7 @@ export default async function AttendanceReportPage({
                   {r.attended} of {r.total} sessions
                 </p>
               </div>
-              <span className={`shrink-0 text-sm font-semibold ${pctClass(r.pct, r.atRisk)}`}>
+              <span className={`shrink-0 text-sm ${pctClass(r.pct, r.atRisk)}`}>
                 {r.pct !== null ? `${r.pct}%` : "—"}
               </span>
             </li>
@@ -168,10 +219,7 @@ export default async function AttendanceReportPage({
       <style>{`@media print { .no-print { display: none !important; } }`}</style>
 
       <div className="no-print">
-        <Link
-          href="/reports"
-          className="text-sm text-gray-500 hover:text-blue-600"
-        >
+        <Link href="/reports" className="text-sm text-gray-500 hover:text-blue-600">
           ← Reports
         </Link>
       </div>
@@ -179,66 +227,40 @@ export default async function AttendanceReportPage({
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Attendance Report</h1>
         <p className="text-sm text-gray-500 mt-0.5">
-          {cycle.name} · {totalSessions} completed session
-          {totalSessions !== 1 ? "s" : ""}
+          {cycle.name} · {totalSessions} completed session{totalSessions !== 1 ? "s" : ""}
         </p>
       </div>
 
       {/* Section 1 — At-Risk */}
       <section>
-        <div
-          className={`rounded-xl border overflow-hidden ${
-            atRiskRows.length > 0
-              ? "border-red-200"
-              : "border-gray-200"
-          }`}
-        >
-          <div
-            className={`px-5 py-3 flex items-center justify-between ${
-              atRiskRows.length > 0 ? "bg-red-50" : "bg-gray-50"
-            } border-b ${
-              atRiskRows.length > 0 ? "border-red-200" : "border-gray-200"
-            }`}
-          >
+        <div className={`rounded-xl border overflow-hidden ${atRiskRows.length > 0 ? "border-red-200" : "border-gray-200"}`}>
+          <div className={`px-5 py-3 flex items-center justify-between border-b ${
+            atRiskRows.length > 0 ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"
+          }`}>
             <div>
-              <h2
-                className={`text-lg font-semibold ${
-                  atRiskRows.length > 0 ? "text-red-800" : "text-gray-900"
-                }`}
-              >
+              <h2 className={`text-lg font-semibold ${atRiskRows.length > 0 ? "text-red-800" : "text-gray-900"}`}>
                 At-Risk Participants
               </h2>
-              <p
-                className={`text-sm ${
-                  atRiskRows.length > 0 ? "text-red-600" : "text-gray-500"
-                }`}
-              >
-                (below {threshold}% attendance)
+              <p className={`text-sm ${atRiskRows.length > 0 ? "text-red-600" : "text-gray-500"}`}>
+                Below {threshold}% attendance · only Absent counts against
               </p>
             </div>
           </div>
-
           {atRiskRows.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 text-sm bg-white">
-              No at-risk participants. Great job!
-            </div>
+            <div className="p-8 text-center text-gray-400 text-sm bg-white">No at-risk participants. Great job!</div>
           ) : (
-            <div className="bg-white">
-              <AttendanceTable data={atRiskRows} />
-            </div>
+            <div className="bg-white"><AttendanceTable data={atRiskRows} /></div>
           )}
         </div>
       </section>
 
-      {/* Section 2 — All Participants */}
+      {/* Section 2 — Summary table */}
       <section>
         <div className="rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              All Participants
-            </h2>
+            <h2 className="text-lg font-semibold text-gray-900">All Participants</h2>
             <ExcelExportButton
-              data={exportData}
+              data={summaryExportData}
               filename="attendance-report.xlsx"
               sheetName="Attendance"
               className="no-print text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
@@ -246,14 +268,108 @@ export default async function AttendanceReportPage({
               Export to Excel
             </ExcelExportButton>
           </div>
-
           {sortedRows.length === 0 ? (
+            <div className="p-8 text-center text-gray-400 text-sm bg-white">No active participants found.</div>
+          ) : (
+            <div className="bg-white"><AttendanceTable data={sortedRows} /></div>
+          )}
+        </div>
+      </section>
+
+      {/* Section 3 — Pivot grid */}
+      <section>
+        <div className="rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">Attendance Grid</h2>
+              <p className="text-xs text-gray-500 mt-0.5">
+                Weekly sessions (1, 2…) · Reflections (R1, R2…) ·{" "}
+                <span className="text-green-700">P</span>{" "}
+                <span className="text-amber-600">L</span>{" "}
+                <span className="text-orange-600">LE</span>{" "}
+                <span className="text-blue-600">E</span>{" "}
+                <span className="text-red-600">A</span>
+              </p>
+            </div>
+            <ExcelExportButton
+              data={pivotExportData}
+              filename="attendance-grid.xlsx"
+              sheetName="Grid"
+              className="no-print text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Export to Excel
+            </ExcelExportButton>
+          </div>
+
+          {totalSessions === 0 ? (
+            <div className="p-8 text-center text-gray-400 text-sm bg-white">
+              No completed sessions yet.
+            </div>
+          ) : participants.length === 0 ? (
             <div className="p-8 text-center text-gray-400 text-sm bg-white">
               No active participants found.
             </div>
           ) : (
-            <div className="bg-white">
-              <AttendanceTable data={sortedRows} />
+            <div className="bg-white overflow-x-auto">
+              <table className="text-xs border-collapse">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    {/* Sticky name header */}
+                    <th className="sticky left-0 z-10 bg-gray-50 px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-r border-gray-200 min-w-[160px]">
+                      Name
+                    </th>
+                    {sessions.map((s) => (
+                      <th
+                        key={s.id}
+                        className="px-2 py-3 text-center font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap w-8"
+                        title={`${s.type === "WEEKLY" ? "Session" : "Reflection"} ${s.number}`}
+                      >
+                        {sessionLabel(s.type, s.number)}
+                      </th>
+                    ))}
+                    <th className="px-3 py-3 text-center font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-l border-gray-200 w-12">
+                      %
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {participants.map((p) => {
+                    const rec = pivotMap[p.id];
+                    const attended = sessions.filter(
+                      (s) => rec[s.id] && rec[s.id] !== "ABSENT"
+                    ).length;
+                    const pct =
+                      totalSessions > 0
+                        ? Math.round((attended / totalSessions) * 100)
+                        : null;
+                    const atRisk = pct !== null && pct < threshold;
+                    return (
+                      <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                        {/* Sticky name cell */}
+                        <td className="sticky left-0 z-10 bg-white px-4 py-2 font-medium text-gray-900 whitespace-nowrap border-r border-gray-100">
+                          {p.fullName}
+                        </td>
+                        {sessions.map((s) => {
+                          const status = rec[s.id];
+                          return (
+                            <td
+                              key={s.id}
+                              className={`px-1 py-2 text-center font-medium ${
+                                status ? statusCellClass[status] ?? "text-gray-600" : "text-gray-200"
+                              }`}
+                            >
+                              {status ? (statusLetter[status] ?? status) : "·"}
+                            </td>
+                          );
+                        })}
+                        <td className={`px-3 py-2 text-center border-l border-gray-100 ${pctClass(pct, atRisk)}`}>
+                          {pct !== null ? `${pct}%` : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
