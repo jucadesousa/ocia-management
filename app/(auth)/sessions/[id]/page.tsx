@@ -18,6 +18,22 @@ const statusLabel: Record<SessionStatus, string> = {
   CANCELLED: "Cancelled",
 };
 
+const attendanceLabel: Record<string, string> = {
+  PRESENT:    "Present",
+  ABSENT:     "Absent",
+  LATE:       "Late",
+  LEFT_EARLY: "Left Early",
+  EXCUSED:    "Excused",
+};
+
+const attendanceBadge: Record<string, string> = {
+  PRESENT:    "bg-green-100 text-green-700",
+  ABSENT:     "bg-gray-100 text-gray-500",
+  LATE:       "bg-amber-100 text-amber-700",
+  LEFT_EARLY: "bg-orange-100 text-orange-700",
+  EXCUSED:    "bg-blue-100 text-blue-700",
+};
+
 function sessionLabel(type: SessionType, number: number): string {
   return type === "WEEKLY" ? `Session ${number}` : `Reflection ${number}`;
 }
@@ -25,9 +41,7 @@ function sessionLabel(type: SessionType, number: number): string {
 function formatDate(date: Date | null): string {
   if (!date) return "—";
   return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
+    month: "short", day: "numeric", year: "numeric",
   });
 }
 
@@ -38,19 +52,35 @@ export default async function SessionDetailPage({ params }: Props) {
 
   const session = await prisma.session.findUnique({
     where: { id },
-    include: { cycle: { select: { name: true } } },
+    include: {
+      cycle: { select: { name: true } },
+      attendanceRecords: {
+        include: {
+          participant: {
+            select: { id: true, fullName: true, group: true },
+          },
+        },
+        orderBy: { participant: { lastName: "asc" } },
+      },
+    },
   });
 
   if (!session) notFound();
 
   const label = sessionLabel(session.type, session.number);
+  const records = session.attendanceRecords;
+
+  const englishRecords = records.filter((r) => r.group === "ENGLISH");
+  const spanishRecords = records.filter((r) => r.group === "SPANISH");
+
+  function presentCount(recs: typeof records) {
+    return recs.filter((r) => r.status !== "ABSENT").length;
+  }
 
   return (
     <div className="p-6 max-w-2xl space-y-6">
       <nav className="text-sm text-gray-500 flex items-center gap-1.5">
-        <Link href="/sessions" className="hover:text-blue-600">
-          Sessions
-        </Link>
+        <Link href="/sessions" className="hover:text-blue-600">Sessions</Link>
         <span>/</span>
         <span className="text-gray-900">{label}</span>
       </nav>
@@ -72,14 +102,15 @@ export default async function SessionDetailPage({ params }: Props) {
         )}
       </div>
 
+      {/* Session details */}
       <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-100">
         {[
-          { label: "Title", value: session.title ?? "—" },
+          { label: "Title",     value: session.title ?? "—" },
           { label: "Presenter", value: session.presenter ?? "—" },
-          { label: "Date", value: formatDate(session.date) },
-          { label: "Type", value: session.type === "WEEKLY" ? "Weekly" : "Reflection" },
-          { label: "Status", value: statusLabel[session.status] },
-          { label: "Cycle", value: session.cycle.name },
+          { label: "Date",      value: formatDate(session.date) },
+          { label: "Type",      value: session.type === "WEEKLY" ? "Weekly" : "Reflection" },
+          { label: "Status",    value: statusLabel[session.status] },
+          { label: "Cycle",     value: session.cycle.name },
         ].map(({ label: rowLabel, value }) => (
           <div key={rowLabel} className="flex px-4 py-3 text-sm">
             <span className="w-36 font-medium text-gray-500 shrink-0">{rowLabel}</span>
@@ -88,11 +119,55 @@ export default async function SessionDetailPage({ params }: Props) {
         ))}
       </div>
 
-      <div>
-        <h2 className="text-base font-semibold text-gray-900 mb-3">Attendance</h2>
-        <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-6 text-center text-sm text-gray-500">
-          Attendance marking is available in the Attendance section.
+      {/* Attendance */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base font-semibold text-gray-900">Attendance</h2>
+          {records.length > 0 && (
+            <span className="text-sm text-gray-500">
+              {presentCount(records)} / {records.length} present
+            </span>
+          )}
         </div>
+
+        {records.length === 0 ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-8 text-center text-sm text-gray-400">
+            No attendance recorded for this session yet.
+          </div>
+        ) : (
+          <>
+            {[
+              { label: "English", recs: englishRecords },
+              { label: "Spanish", recs: spanishRecords },
+            ]
+              .filter(({ recs }) => recs.length > 0)
+              .map(({ label: groupLabel, recs }) => (
+                <div key={groupLabel} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  <div className="px-4 py-2.5 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">{groupLabel}</span>
+                    <span className="text-xs text-gray-500">
+                      {presentCount(recs)} / {recs.length} present
+                    </span>
+                  </div>
+                  <ul className="divide-y divide-gray-100">
+                    {recs.map((r) => (
+                      <li key={r.id} className="flex items-center justify-between px-4 py-2.5 gap-3">
+                        <Link
+                          href={`/participants/${r.participant.id}`}
+                          className="text-sm font-medium text-gray-900 hover:text-blue-600 truncate"
+                        >
+                          {r.participant.fullName}
+                        </Link>
+                        <span className={`shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${attendanceBadge[r.status] ?? "bg-gray-100 text-gray-600"}`}>
+                          {attendanceLabel[r.status] ?? r.status}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+          </>
+        )}
       </div>
     </div>
   );
