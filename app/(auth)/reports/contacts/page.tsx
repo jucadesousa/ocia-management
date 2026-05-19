@@ -133,89 +133,78 @@ export default async function ContactsReportPage({
         </Link>
       </div>
 
-      {/* Table */}
+      {/* Contact list */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {participants.length === 0 ? (
           <div className="p-8 text-center text-gray-400 text-sm">
             No active participants found.
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                {[
-                  "Full Name",
-                  "Preferred Name",
-                  "Group",
-                  "Stage",
-                  "Phone",
-                  "Work Phone",
-                  "Email",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+          <>
+            {/* Mobile cards */}
+            <ul className="md:hidden divide-y divide-gray-100">
               {participants.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {p.fullName}
-                  </td>
-                  <td className="px-4 py-3 text-gray-500 italic text-xs">
-                    {p.preferredName ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {p.group === "ENGLISH" ? "English" : "Spanish"}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {stageLabel[p.ociaStage]}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {p.phone ? (
-                      <a
-                        href={`tel:${p.phone}`}
-                        className="hover:text-blue-600"
-                      >
-                        {p.phone}
-                      </a>
-                    ) : (
-                      <span className="text-gray-400">—</span>
+                <li key={p.id} className="px-4 py-3 space-y-1">
+                  <div>
+                    <span className="text-sm font-medium text-gray-900">{p.fullName}</span>
+                    {p.preferredName && (
+                      <span className="ml-1 text-xs text-gray-400 italic">({p.preferredName})</span>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {p.phoneWork ? (
-                      <a
-                        href={`tel:${p.phoneWork}`}
-                        className="hover:text-blue-600"
-                      >
-                        {p.phoneWork}
-                      </a>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {p.email ? (
-                      <a
-                        href={`mailto:${p.email}`}
-                        className="hover:text-blue-600"
-                      >
-                        {p.email}
-                      </a>
-                    ) : (
-                      <span className="text-gray-400">—</span>
-                    )}
-                  </td>
-                </tr>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {p.group === "ENGLISH" ? "English" : "Spanish"} · {stageLabel[p.ociaStage]}
+                  </p>
+                  {p.phone && (
+                    <a href={`tel:${p.phone}`} className="block text-sm text-blue-600">
+                      {p.phone}
+                    </a>
+                  )}
+                  {p.phoneWork && (
+                    <a href={`tel:${p.phoneWork}`} className="block text-sm text-blue-600">
+                      {p.phoneWork} <span className="text-xs text-gray-400">(work)</span>
+                    </a>
+                  )}
+                  {p.email && (
+                    <a href={`mailto:${p.email}`} className="block text-sm text-blue-600 truncate">
+                      {p.email}
+                    </a>
+                  )}
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+
+            {/* Desktop table */}
+            <table className="hidden md:table w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  {["Full Name", "Preferred Name", "Group", "Stage", "Phone", "Work Phone", "Email"].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {participants.map((p) => (
+                  <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 font-medium text-gray-900">{p.fullName}</td>
+                    <td className="px-4 py-3 text-gray-500 italic text-xs">{p.preferredName ?? "—"}</td>
+                    <td className="px-4 py-3 text-gray-600">{p.group === "ENGLISH" ? "English" : "Spanish"}</td>
+                    <td className="px-4 py-3 text-gray-600">{stageLabel[p.ociaStage]}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {p.phone ? <a href={`tel:${p.phone}`} className="hover:text-blue-600">{p.phone}</a> : <span className="text-gray-400">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {p.phoneWork ? <a href={`tel:${p.phoneWork}`} className="hover:text-blue-600">{p.phoneWork}</a> : <span className="text-gray-400">—</span>}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {p.email ? <a href={`mailto:${p.email}`} className="hover:text-blue-600">{p.email}</a> : <span className="text-gray-400">—</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
     </div>

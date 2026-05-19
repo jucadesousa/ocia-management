@@ -112,40 +112,54 @@ export default async function AttendanceReportPage({
 
   function AttendanceTable({ data }: { data: ParticipantRow[] }) {
     return (
-      <table className="w-full text-sm">
-        <thead className="bg-gray-50 border-b border-gray-200">
-          <tr>
-            {["Full Name", "Group", "Stage", "Attended", "Sessions", "%"].map(
-              (h) => (
-                <th
-                  key={h}
-                  className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider"
-                >
+      <>
+        {/* Mobile cards */}
+        <ul className="md:hidden divide-y divide-gray-100">
+          {data.map((r) => (
+            <li key={r.id} className="px-4 py-3 flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{r.fullName}</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {r.group} · {stageLabel[r.ociaStage]}
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {r.attended} of {r.total} sessions
+                </p>
+              </div>
+              <span className={`shrink-0 text-sm font-semibold ${pctClass(r.pct, r.atRisk)}`}>
+                {r.pct !== null ? `${r.pct}%` : "—"}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Desktop table */}
+        <table className="hidden md:table w-full text-sm">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              {["Full Name", "Group", "Stage", "Attended", "Sessions", "%"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   {h}
                 </th>
-              )
-            )}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {data.map((r) => (
-            <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-              <td className="px-4 py-3 font-medium text-gray-900">
-                {r.fullName}
-              </td>
-              <td className="px-4 py-3 text-gray-600">{r.group}</td>
-              <td className="px-4 py-3 text-gray-600">
-                {stageLabel[r.ociaStage]}
-              </td>
-              <td className="px-4 py-3 text-gray-700">{r.attended}</td>
-              <td className="px-4 py-3 text-gray-700">{r.total}</td>
-              <td className={`px-4 py-3 ${pctClass(r.pct, r.atRisk)}`}>
-                {r.pct !== null ? `${r.pct}%` : "—"}
-              </td>
+              ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {data.map((r) => (
+              <tr key={r.id} className="hover:bg-gray-50 transition-colors">
+                <td className="px-4 py-3 font-medium text-gray-900">{r.fullName}</td>
+                <td className="px-4 py-3 text-gray-600">{r.group}</td>
+                <td className="px-4 py-3 text-gray-600">{stageLabel[r.ociaStage]}</td>
+                <td className="px-4 py-3 text-gray-700">{r.attended}</td>
+                <td className="px-4 py-3 text-gray-700">{r.total}</td>
+                <td className={`px-4 py-3 ${pctClass(r.pct, r.atRisk)}`}>
+                  {r.pct !== null ? `${r.pct}%` : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </>
     );
   }
 

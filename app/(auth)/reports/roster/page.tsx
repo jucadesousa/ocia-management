@@ -185,59 +185,64 @@ export default async function RosterPage({
               No active participants in this group.
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">
-                    #
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Full Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Preferred Name
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    Stage
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    {hasRecords ? "Status" : "Attendance"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
+            <>
+              {/* Mobile cards */}
+              <ul className="md:hidden divide-y divide-gray-100">
                 {participants.map((p, i) => {
                   const status = statusMap[p.id];
                   return (
-                    <tr key={p.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-gray-500 text-xs">
-                        {i + 1}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        {p.fullName}
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 italic text-xs">
-                        {p.preferredName ?? ""}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {stageLabel[p.ociaStage]}
-                      </td>
-                      <td
-                        className={`px-4 py-3 ${
-                          status
-                            ? attendanceStatusClass[status] ?? "text-gray-600"
-                            : "text-gray-300"
-                        }`}
-                      >
-                        {status
-                          ? attendanceStatusLabel[status] ?? status
-                          : "—"}
-                      </td>
-                    </tr>
+                    <li key={p.id} className="px-4 py-3 flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-xs text-gray-400 shrink-0">{i + 1}.</span>
+                          <span className="text-sm font-medium text-gray-900 truncate">{p.fullName}</span>
+                          {p.preferredName && (
+                            <span className="text-xs text-gray-400 italic shrink-0">({p.preferredName})</span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-0.5 ml-4">{stageLabel[p.ociaStage]}</p>
+                      </div>
+                      <span className={`shrink-0 text-xs font-medium ${
+                        status ? attendanceStatusClass[status] ?? "text-gray-600" : "text-gray-300"
+                      }`}>
+                        {status ? attendanceStatusLabel[status] ?? status : "—"}
+                      </span>
+                    </li>
                   );
                 })}
-              </tbody>
-            </table>
+              </ul>
+
+              {/* Desktop table */}
+              <table className="hidden md:table w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Preferred Name</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stage</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      {hasRecords ? "Status" : "Attendance"}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {participants.map((p, i) => {
+                    const status = statusMap[p.id];
+                    return (
+                      <tr key={p.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-gray-500 text-xs">{i + 1}</td>
+                        <td className="px-4 py-3 font-medium text-gray-900">{p.fullName}</td>
+                        <td className="px-4 py-3 text-gray-500 italic text-xs">{p.preferredName ?? ""}</td>
+                        <td className="px-4 py-3 text-gray-600">{stageLabel[p.ociaStage]}</td>
+                        <td className={`px-4 py-3 ${status ? attendanceStatusClass[status] ?? "text-gray-600" : "text-gray-300"}`}>
+                          {status ? attendanceStatusLabel[status] ?? status : "—"}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </>
           )}
         </div>
       </section>
@@ -264,7 +269,7 @@ export default async function RosterPage({
           </PrintButton>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-x-auto">
           {participants.length === 0 ? (
             <div className="p-8 text-center text-gray-400 text-sm">
               No active participants in this group.
