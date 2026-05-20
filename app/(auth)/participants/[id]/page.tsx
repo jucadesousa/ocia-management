@@ -132,17 +132,26 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
             </div>
           </div>
         </div>
-        {user.role === "ADMIN" && (
-          <div className="flex items-center gap-2">
-            <Link
-              href={`/participants/${id}/edit`}
-              className="shrink-0 text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Edit
-            </Link>
-            <DeleteParticipantButton id={id} name={participant.fullName} />
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/participants/${id}/print`}
+            target="_blank"
+            className="shrink-0 text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            Print form
+          </Link>
+          {user.role === "ADMIN" && (
+            <>
+              <Link
+                href={`/participants/${id}/edit`}
+                className="shrink-0 text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Edit
+              </Link>
+              <DeleteParticipantButton id={id} name={participant.fullName} />
+            </>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
