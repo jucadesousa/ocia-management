@@ -169,7 +169,7 @@ export default async function PrintPage({ params }: Props) {
           <div className="text-center mb-5">
             <p className="italic text-sm">St. Bartholomew the Apostle Catholic Church</p>
             <p className="text-[1.6rem] font-bold tracking-tight mt-0.5">
-              <span className="text-[2rem]">R</span>ite of{" "}
+              <span className="text-[2rem]">O</span>rder of{" "}
               <span className="text-[2rem]">C</span>hristian{" "}
               <span className="text-[2rem]">I</span>nitiation of{" "}
               <span className="text-[2rem]">A</span>dults
