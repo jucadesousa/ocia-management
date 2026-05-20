@@ -9,7 +9,7 @@ type Defaults = {
   baptismDenomination: string | null;
   baptismDate: string | null;
   baptismParish: string | null;
-  baptismCertReceived: boolean;
+  baptismProofStatus: string;
   hasFirstCommunion: boolean | null;
   hasConfirmation: boolean | null;
   marriageStatus: string | null;
@@ -131,7 +131,19 @@ export function SacramentalForm({
           <Field name="baptismDenomination" label="Denomination / church" value={d?.baptismDenomination ?? null} />
           <Field name="baptismDate" label="Baptism date" value={d?.baptismDate ?? null} type="date" />
           <Field name="baptismParish" label="Baptism parish" value={d?.baptismParish ?? null} />
-          <BoolSelect name="baptismCertReceived" label="Baptism cert received" value={d?.baptismCertReceived ?? false} />
+          <div>
+            <label className={labelCls}>Baptism proof received</label>
+            <select
+              name="baptismProofStatus"
+              defaultValue={d?.baptismProofStatus ?? "NONE"}
+              className={inputCls}
+            >
+              <option value="NONE">None</option>
+              <option value="CERTIFICATE">Certificate</option>
+              <option value="LETTER">Letter from faith community</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
         </div>
       </div>
 

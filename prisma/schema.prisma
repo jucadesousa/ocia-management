@@ -60,6 +60,13 @@ enum DocumentType {
   OTHER
 }
 
+enum BaptismProofStatus {
+  NONE
+  CERTIFICATE
+  LETTER
+  OTHER
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 // Staff login accounts — linked to Supabase Auth via supabaseUserId
@@ -139,7 +146,7 @@ model SacramentalRecord {
   baptismDenomination   String?     // denomination/church where baptized
   baptismDate           DateTime?
   baptismParish         String?
-  baptismCertReceived   Boolean     @default(false)
+  baptismProofStatus    BaptismProofStatus @default(NONE)
   // Sacraments
   hasFirstCommunion     Boolean?
   hasConfirmation       Boolean?

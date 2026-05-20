@@ -43,7 +43,7 @@ export default async function MinistryOverviewPage() {
           isBaptized: true,
           hasFirstCommunion: true,
           hasConfirmation: true,
-          baptismCertReceived: true,
+          baptismProofStatus: true,
         },
       },
     },
@@ -93,13 +93,13 @@ export default async function MinistryOverviewPage() {
         stage: p.ociaStage,
         missing: "No sacramental record",
       });
-    } else if (rec.baptismCertReceived === false) {
+    } else if (rec.baptismProofStatus === "NONE") {
       missingRows.push({
         id: p.id,
         fullName: p.fullName,
         group: p.group === "ENGLISH" ? "English" : "Spanish",
         stage: p.ociaStage,
-        missing: "Baptism cert",
+        missing: "Baptism proof",
       });
     }
   }

@@ -30,7 +30,7 @@ export default async function SacramentalEditPage({ params }: Props) {
         baptismDenomination: sr.baptismDenomination,
         baptismDate: toDateInput(sr.baptismDate),
         baptismParish: sr.baptismParish,
-        baptismCertReceived: sr.baptismCertReceived,
+        baptismProofStatus: sr.baptismProofStatus,
         hasFirstCommunion: sr.hasFirstCommunion,
         hasConfirmation: sr.hasConfirmation,
         marriageStatus: sr.marriageStatus,

@@ -26,6 +26,16 @@ function boolDefault(formData: FormData, key: string, def: boolean): boolean {
   return def;
 }
 
+const BAPTISM_PROOF_VALUES = ["NONE", "CERTIFICATE", "LETTER", "OTHER"] as const;
+type BaptismProofStatus = (typeof BAPTISM_PROOF_VALUES)[number];
+
+function baptismProof(formData: FormData): BaptismProofStatus {
+  const val = (formData.get("baptismProofStatus") as string)?.toUpperCase();
+  return (BAPTISM_PROOF_VALUES as readonly string[]).includes(val)
+    ? (val as BaptismProofStatus)
+    : "NONE";
+}
+
 export async function upsertSacramentalRecord(
   participantId: string,
   _state: SacramentalFormState,
@@ -48,7 +58,7 @@ export async function upsertSacramentalRecord(
       baptismDenomination:     str(formData, "baptismDenomination"),
       baptismDate:             baptismDateRaw ? new Date(baptismDateRaw) : null,
       baptismParish:           str(formData, "baptismParish"),
-      baptismCertReceived:     boolDefault(formData, "baptismCertReceived", false),
+      baptismProofStatus:      baptismProof(formData),
       hasFirstCommunion:       bool(formData, "hasFirstCommunion"),
       hasConfirmation:         bool(formData, "hasConfirmation"),
       marriageStatus:          str(formData, "marriageStatus"),
@@ -70,7 +80,7 @@ export async function upsertSacramentalRecord(
       baptismDenomination:     str(formData, "baptismDenomination"),
       baptismDate:             baptismDateRaw ? new Date(baptismDateRaw) : null,
       baptismParish:           str(formData, "baptismParish"),
-      baptismCertReceived:     boolDefault(formData, "baptismCertReceived", false),
+      baptismProofStatus:      baptismProof(formData),
       hasFirstCommunion:       bool(formData, "hasFirstCommunion"),
       hasConfirmation:         bool(formData, "hasConfirmation"),
       marriageStatus:          str(formData, "marriageStatus"),

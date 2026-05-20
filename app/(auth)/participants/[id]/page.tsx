@@ -238,7 +238,15 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
                 <DetailRow label="Denomination / church" value={sr.baptismDenomination} />
                 <DetailRow label="Baptism date" value={fmt(sr.baptismDate)} />
                 <DetailRow label="Baptism parish" value={sr.baptismParish} />
-                <BoolRow label="Baptism cert received" value={sr.baptismCertReceived} />
+                <DetailRow
+                  label="Baptism proof"
+                  value={
+                    sr.baptismProofStatus === "CERTIFICATE" ? "Certificate" :
+                    sr.baptismProofStatus === "LETTER"      ? "Letter from faith community" :
+                    sr.baptismProofStatus === "OTHER"       ? "Other" :
+                    null
+                  }
+                />
               </dl>
 
               <SectionTitle title="Other sacraments" />
