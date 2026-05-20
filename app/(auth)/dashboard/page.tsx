@@ -39,7 +39,7 @@ export default async function DashboardPage() {
     completedSessionCount > 0 && Array.isArray(atRiskParticipants)
       ? atRiskParticipants.filter((p) => {
           const attended = p.attendanceRecords.filter(
-            (r) => r.status === "PRESENT" || r.status === "LATE"
+            (r) => r.status !== "ABSENT"
           ).length;
           const pct = Math.round((attended / completedSessionCount) * 100);
           return pct < threshold;
