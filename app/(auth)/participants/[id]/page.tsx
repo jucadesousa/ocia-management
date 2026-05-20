@@ -91,7 +91,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
   return (
     <div className="p-6 space-y-6 max-w-3xl">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
           {/* Avatar */}
           {participant.photoUrl ? (
@@ -115,7 +115,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
             {participant.preferredName && (
               <p className="text-sm text-gray-500 mt-0.5">Goes by: {participant.preferredName}</p>
             )}
-            <div className="flex gap-2 mt-2">
+            <div className="flex flex-wrap gap-2 mt-2">
               <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">
                 {participant.group === "ENGLISH" ? "English" : "Spanish"}
               </span>
@@ -132,11 +132,12 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        {/* Action buttons — full width on mobile, auto width on desktop */}
+        <div className="flex flex-wrap gap-2">
           <Link
             href={`/participants/${id}/print`}
             target="_blank"
-            className="shrink-0 text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+            className="flex-1 sm:flex-none text-center text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
           >
             Print form
           </Link>
@@ -144,7 +145,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
             <>
               <Link
                 href={`/participants/${id}/edit`}
-                className="shrink-0 text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex-1 sm:flex-none text-center text-sm font-medium text-gray-600 border border-gray-300 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Edit
               </Link>
