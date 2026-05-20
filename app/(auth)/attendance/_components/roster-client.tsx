@@ -53,6 +53,13 @@ export function RosterClient({ sessionId, group, participants, initialStatuses }
 
   const hasChanges = JSON.stringify(statuses) !== JSON.stringify(savedStatuses);
 
+  // Reset statuses when the session changes
+  useEffect(() => {
+    setStatuses(initialStatuses);
+    setSavedStatuses(initialStatuses);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
+
   // After a successful save, update the baseline
   useEffect(() => {
     if (state?.saved) {
