@@ -74,7 +74,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
   ];
 
   const attended = participant.attendanceRecords.filter(
-    (r) => r.status === "PRESENT" || r.status === "LATE"
+    (r) => r.status !== "ABSENT"
   ).length;
   const total = participant.attendanceRecords.length;
 
