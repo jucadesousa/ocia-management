@@ -93,7 +93,7 @@ export default async function MinistryOverviewPage() {
         stage: p.ociaStage,
         missing: "No sacramental record",
       });
-    } else if (rec.baptismProofStatus === "NONE") {
+    } else if (rec.isBaptized === true && rec.baptismProofStatus === "NONE") {
       missingRows.push({
         id: p.id,
         fullName: p.fullName,
