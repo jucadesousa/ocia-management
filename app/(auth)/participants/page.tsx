@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { deriveOciaLabel } from "@/lib/ocia-stage";
 import { ParticipantFilters } from "./_components/filters";
+import { OciaProfileLegend } from "./_components/ocia-profile-legend";
 import type { Group, OciaStage, ParticipantStatus } from "@prisma/client";
 
 const PAGE_SIZE = 50;
@@ -194,11 +195,17 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
             <table className="hidden md:table w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {["Name", "Group", "Stage", "OCIA Profile", "Status", "Attendance"].map((h) => (
+                  {["Name", "Group", "Stage", "Status", "Attendance"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       {h}
                     </th>
                   ))}
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-0.5">
+                      OCIA Profile
+                      <OciaProfileLegend />
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -243,13 +250,6 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        {(() => { const ol = deriveOciaLabel(p.sacramentalRecord); return (
-                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${ol.color}`}>
-                            {ol.label}
-                          </span>
-                        ); })()}
-                      </td>
-                      <td className="px-4 py-3">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[p.status]}`}>
                           {p.status.charAt(0) + p.status.slice(1).toLowerCase()}
                         </span>
@@ -263,6 +263,13 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
                             {atRisk && <span className="ml-1 text-xs">⚠</span>}
                           </span>
                         )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {(() => { const ol = deriveOciaLabel(p.sacramentalRecord); return (
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${ol.color}`}>
+                            {ol.label}
+                          </span>
+                        ); })()}
                       </td>
                     </tr>
                   );
