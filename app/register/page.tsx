@@ -1,5 +1,5 @@
 "use client";
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { registerParticipant } from "@/app/actions/participants";
 
 type Lang = "en" | "es";
@@ -73,6 +73,10 @@ const T = {
     sponsorName: "Sponsor name",
     sponsorNamePh: "Name of your sponsor (if known)",
     additionalComments: "Additional comments",
+    sPhoto: "Photo (optional)",
+    photoHint: "A photo helps us prepare your badge. You can take a selfie or choose one from your library.",
+    photoAdd: "Add photo",
+    photoChange: "Change photo",
     requiredNote:
       "Fields marked * are required. All other fields are optional but help our team serve you better.",
     submit: "Submit registration",
@@ -147,6 +151,10 @@ const T = {
     sponsorName: "Nombre del padrino / madrina",
     sponsorNamePh: "Nombre de su padrino/madrina (si lo sabe)",
     additionalComments: "Comentarios adicionales",
+    sPhoto: "Foto (opcional)",
+    photoHint: "Una foto nos ayuda a preparar su identificación. Puede tomarse una selfie o elegir una de su galería.",
+    photoAdd: "Agregar foto",
+    photoChange: "Cambiar foto",
     requiredNote:
       "Los campos marcados con * son obligatorios. Los demás son opcionales pero ayudan a nuestro equipo a servirle mejor.",
     submit: "Enviar registro",
@@ -327,6 +335,8 @@ export default function RegisterPage() {
   const [baptized, setBaptized] = useState("");
   const [maritalStatus, setMaritalStatus] = useState("");
   const [hasChildren, setHasChildren] = useState("");
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
 
   if (!lang) {
     return <LanguagePicker onSelect={setLang} />;
@@ -372,6 +382,53 @@ export default function RegisterPage() {
               {state.error}
             </p>
           )}
+
+          {/* ── Photo ───────────────────────────────────────────── */}
+          <div className="flex flex-col items-center gap-3 py-2">
+            <button
+              type="button"
+              onClick={() => photoRef.current?.click()}
+              className="relative shrink-0 group"
+              aria-label={photoPreview ? t.photoChange : t.photoAdd}
+            >
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Preview"
+                  className="w-24 h-24 rounded-full object-cover border-2 border-blue-300"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center group-hover:border-blue-400 group-hover:bg-blue-50 transition-colors">
+                  <svg className="w-8 h-8 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                  </svg>
+                </div>
+              )}
+            </button>
+            <div className="text-center">
+              <p className="text-sm font-medium text-gray-700">{t.sPhoto}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{t.photoHint}</p>
+              <button
+                type="button"
+                onClick={() => photoRef.current?.click()}
+                className="mt-2 text-xs text-blue-600 hover:underline font-medium"
+              >
+                {photoPreview ? t.photoChange : t.photoAdd}
+              </button>
+            </div>
+            <input
+              ref={photoRef}
+              type="file"
+              name="photo"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) setPhotoPreview(URL.createObjectURL(file));
+              }}
+            />
+          </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 

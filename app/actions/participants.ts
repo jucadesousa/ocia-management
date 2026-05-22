@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { BaptismType, Group, OciaStage, ParticipantStatus } from "@prisma/client";
 
 function deriveBaptismType(isBaptized: boolean | null, denomination: string | null): BaptismType {
@@ -228,6 +229,33 @@ export async function registerParticipant(
         childrenNotes,
       },
     });
+  }
+
+  // Optional photo — failure is silent so it never blocks registration
+  const photoFile = formData.get("photo") as File | null;
+  if (photoFile && photoFile.size > 0) {
+    const allowed = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+    if (allowed.includes(photoFile.type)) {
+      try {
+        const ext = photoFile.name.split(".").pop() ?? "jpg";
+        const path = `${participant.id}.${ext}`;
+        const supabase = createAdminClient();
+        const { error: uploadError } = await supabase.storage
+          .from("participant-photos")
+          .upload(path, photoFile, { upsert: true, contentType: photoFile.type });
+        if (!uploadError) {
+          const { data: { publicUrl } } = supabase.storage
+            .from("participant-photos")
+            .getPublicUrl(path);
+          await prisma.participant.update({
+            where: { id: participant.id },
+            data: { photoUrl: `${publicUrl}?t=${Date.now()}` },
+          });
+        }
+      } catch {
+        // Photo upload failed — participant record is already saved, continue
+      }
+    }
   }
 
   return { success: true };
