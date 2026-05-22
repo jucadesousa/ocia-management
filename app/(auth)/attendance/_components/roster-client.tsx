@@ -7,6 +7,7 @@ type Participant = {
   id: string;
   fullName: string;
   preferredName: string | null;
+  ociaLabel: { label: string; color: string };
 };
 
 type Props = {
@@ -151,6 +152,9 @@ export function RosterClient({ sessionId, group, participants, initialStatuses }
                 {p.preferredName && (
                   <p className="text-xs text-gray-500">&ldquo;{p.preferredName}&rdquo;</p>
                 )}
+                <span className={`inline-block mt-0.5 text-xs font-medium px-2 py-0.5 rounded-full ${p.ociaLabel.color}`}>
+                  {p.ociaLabel.label}
+                </span>
               </div>
               <span className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${badgeClass}`}>
                 {label}

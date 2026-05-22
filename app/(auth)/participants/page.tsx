@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
+import { deriveOciaLabel } from "@/lib/ocia-stage";
 import { ParticipantFilters } from "./_components/filters";
 import type { Group, OciaStage, ParticipantStatus } from "@prisma/client";
 
@@ -83,6 +84,9 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
           },
           select: { id: true },
         },
+        sacramentalRecord: {
+          select: { baptismType: true, hasFirstCommunion: true, hasConfirmation: true },
+        },
       },
       orderBy: { fullName: "asc" },
       skip: (page - 1) * PAGE_SIZE,
@@ -162,6 +166,11 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
                           <span className={`inline-flex px-1.5 py-0.5 rounded-full text-xs font-medium ${stageBadge[p.ociaStage]}`}>
                             {stageLabel[p.ociaStage]}
                           </span>
+                          {(() => { const ol = deriveOciaLabel(p.sacramentalRecord); return (
+                            <span className={`inline-flex px-1.5 py-0.5 rounded-full text-xs font-medium ${ol.color}`}>
+                              {ol.label}
+                            </span>
+                          ); })()}
                           <span className={`inline-flex px-1.5 py-0.5 rounded-full text-xs font-medium ${statusBadge[p.status]}`}>
                             {p.status.charAt(0) + p.status.slice(1).toLowerCase()}
                           </span>
@@ -185,7 +194,7 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
             <table className="hidden md:table w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {["Name", "Group", "Stage", "Status", "Attendance"].map((h) => (
+                  {["Name", "Group", "Stage", "OCIA Profile", "Status", "Attendance"].map((h) => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       {h}
                     </th>
@@ -232,6 +241,13 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${stageBadge[p.ociaStage]}`}>
                           {stageLabel[p.ociaStage]}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {(() => { const ol = deriveOciaLabel(p.sacramentalRecord); return (
+                          <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${ol.color}`}>
+                            {ol.label}
+                          </span>
+                        ); })()}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[p.status]}`}>

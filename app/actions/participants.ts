@@ -3,7 +3,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
-import { Group, OciaStage, ParticipantStatus } from "@prisma/client";
+import { BaptismType, Group, OciaStage, ParticipantStatus } from "@prisma/client";
+
+function deriveBaptismType(isBaptized: boolean | null, denomination: string | null): BaptismType {
+  if (!isBaptized) return "NONE";
+  if (denomination && /catholic/i.test(denomination)) return "CATHOLIC";
+  return "OTHER_UNVERIFIED";
+}
 
 export type ParticipantFormState = { error?: string; success?: boolean } | undefined;
 
@@ -188,6 +194,7 @@ export async function registerParticipant(
   // Collect sacramental / background fields submitted on the public form
   const isBaptized = yesNo(formData, "isBaptized");
   const baptismDenomination = str(formData, "baptismDenomination");
+  const baptismType = deriveBaptismType(isBaptized, baptismDenomination);
   const marriedToCatholic = yesNo(formData, "marriedToCatholic");
   const marriedByCatholicPriest = yesNo(formData, "marriedByCatholicPriest");
   const hadPriorMarriage = yesNo(formData, "hadPriorMarriage");
@@ -210,6 +217,7 @@ export async function registerParticipant(
       data: {
         participantId: participant.id,
         isBaptized,
+        baptismType,
         baptismDenomination,
         marriageStatus: maritalStatus,
         marriedToCatholic,

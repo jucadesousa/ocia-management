@@ -6,6 +6,7 @@ import type { SacramentalFormState } from "@/app/actions/sacramental";
 
 type Defaults = {
   isBaptized: boolean | null;
+  baptismType: string;
   baptismDenomination: string | null;
   baptismDate: string | null;
   baptismParish: string | null;
@@ -128,6 +129,15 @@ export function SacramentalForm({
         <h2 className={headingCls}>Baptism</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <NullableBoolSelect name="isBaptized" label="Baptized?" value={d?.isBaptized ?? null} />
+          <div>
+            <label className={labelCls}>Baptism type</label>
+            <select name="baptismType" defaultValue={d?.baptismType ?? "NONE"} className={inputCls}>
+              <option value="NONE">Not baptized</option>
+              <option value="CATHOLIC">Catholic</option>
+              <option value="OTHER_VALID">Other Christian — trinitarian (valid)</option>
+              <option value="OTHER_UNVERIFIED">Other Christian — trinitarian (unverified)</option>
+            </select>
+          </div>
           <Field name="baptismDenomination" label="Denomination / church" value={d?.baptismDenomination ?? null} />
           <Field name="baptismDate" label="Baptism date" value={d?.baptismDate ?? null} type="date" />
           <Field name="baptismParish" label="Baptism parish" value={d?.baptismParish ?? null} />

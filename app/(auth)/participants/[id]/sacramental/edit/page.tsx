@@ -27,6 +27,7 @@ export default async function SacramentalEditPage({ params }: Props) {
   const defaults = sr
     ? {
         isBaptized: sr.isBaptized,
+        baptismType: sr.baptismType,
         baptismDenomination: sr.baptismDenomination,
         baptismDate: toDateInput(sr.baptismDate),
         baptismParish: sr.baptismParish,

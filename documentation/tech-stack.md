@@ -17,11 +17,11 @@ Overview of every technology in this project, what it does, and how it connects 
 │   ┌──────────────────────────────────────────────────────────────┐   │
 │   │                    NEXT.JS APPLICATION                       │   │
 │   │                                                              │   │
-│   │   ┌─────────────────┐        ┌────────────────────────────┐ │   │
-│   │   │  React + TSX    │        │    Server Actions / API    │ │   │
-│   │   │  (UI Pages &    │◄──────►│    (business logic,        │ │   │
-│   │   │   Components)   │        │     data mutations)        │ │   │
-│   │   └────────┬────────┘        └──────────┬─────────────────┘ │   │
+│   │   ┌─────────────────┐        ┌────────────────────────────┐  │   │
+│   │   │  React + TSX    │        │    Server Actions / API    │  │   │
+│   │   │  (UI Pages &    │◄──────►│    (business logic,        │  │   │
+│   │   │   Components)   │        │     data mutations)        │  │   │
+│   │   └────────┬────────┘        └──────────┬─────────────────┘  │   │
 │   │            │ Tailwind CSS               │                    │   │
 │   │            │ (styling)          ┌───────┴──────────┐         │   │
 │   │            │                    │   DAL / lib/     │         │   │
@@ -33,9 +33,9 @@ Overview of every technology in this project, what it does, and how it connects 
                  │                            │
       ┌──────────▼──────────┐      ┌──────────▼──────────────────┐
       │      SUPABASE       │      │           SUPABASE          │
-      │   Authentication    │      │     PostgreSQL Database      │
+      │   Authentication    │      │     PostgreSQL Database     │
       │  (login, sessions,  │      │   (via Prisma ORM +         │
-      │   storage)          │      │    connection pooler)        │
+      │   storage)          │      │    connection pooler)       │
       └─────────────────────┘      └─────────────────────────────┘
 ```
 
@@ -228,6 +228,41 @@ User visits the site
                       ├── Prisma writes to PostgreSQL
                       └── Page revalidated and redirected
 ```
+
+---
+
+## Participant Stage Model
+
+Each participant has two related concepts that work together:
+
+### `ociaStage` (on `Participant`)
+An admin-managed enum that tracks where a participant is in the OCIA process: `INQUIRY → CATECHUMEN → CANDIDATE → ELECT → MYSTAGOGY → COMPLETED`. New registrants always start at `INQUIRY`. Admins advance the stage manually from the participant edit form.
+
+### `baptismType` (on `SacramentalRecord`)
+An enum that records the nature of a participant's baptism:
+
+| Value | Meaning |
+|---|---|
+| `NONE` | Not baptized |
+| `CATHOLIC` | Baptized Catholic |
+| `OTHER_VALID` | Baptized in another Christian denomination — trinitarian validity confirmed |
+| `OTHER_UNVERIFIED` | Baptized in another Christian denomination — trinitarian validity not yet confirmed |
+
+At registration, `baptismType` is **auto-suggested** from the registrant's answers (`isBaptized` + `baptismDenomination`). Admins review and correct it in the Sacramental Record edit form after the intake interview.
+
+### Derived OCIA Label
+`lib/ocia-stage.ts` exports `deriveOciaLabel()`, which maps the combination of `baptismType` + `hasFirstCommunion` + `hasConfirmation` to a human-readable label shown on the attendance roster:
+
+| Profile | Derived Label |
+|---|---|
+| Not baptized | Catechumen |
+| Other Christian, unverified | Candidate (Baptism Unverified) |
+| Other Christian, valid trinitarian | Candidate |
+| Catholic — no First Communion | Candidate for Sacraments |
+| Catholic — has Communion, no Confirmation | Candidate for Confirmation |
+| Catholic — fully initiated | Fully Initiated |
+
+The label is computed server-side and rendered as a color-coded pill on each row of the attendance roster.
 
 ---
 

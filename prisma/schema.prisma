@@ -67,6 +67,13 @@ enum BaptismProofStatus {
   OTHER
 }
 
+enum BaptismType {
+  NONE
+  CATHOLIC
+  OTHER_VALID
+  OTHER_UNVERIFIED
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 // Staff login accounts — linked to Supabase Auth via supabaseUserId
@@ -143,6 +150,7 @@ model SacramentalRecord {
   participant           Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
   // Baptism
   isBaptized            Boolean?
+  baptismType           BaptismType @default(NONE)
   baptismDenomination   String?     // denomination/church where baptized
   baptismDate           DateTime?
   baptismParish         String?

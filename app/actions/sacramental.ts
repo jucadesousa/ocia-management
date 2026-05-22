@@ -36,6 +36,16 @@ function baptismProof(formData: FormData): BaptismProofStatus {
     : "NONE";
 }
 
+const BAPTISM_TYPE_VALUES = ["NONE", "CATHOLIC", "OTHER_VALID", "OTHER_UNVERIFIED"] as const;
+type BaptismType = (typeof BAPTISM_TYPE_VALUES)[number];
+
+function baptismType(formData: FormData): BaptismType {
+  const val = (formData.get("baptismType") as string)?.toUpperCase();
+  return (BAPTISM_TYPE_VALUES as readonly string[]).includes(val)
+    ? (val as BaptismType)
+    : "NONE";
+}
+
 export async function upsertSacramentalRecord(
   participantId: string,
   _state: SacramentalFormState,
@@ -55,6 +65,7 @@ export async function upsertSacramentalRecord(
     create: {
       participantId,
       isBaptized:              bool(formData, "isBaptized"),
+      baptismType:             baptismType(formData),
       baptismDenomination:     str(formData, "baptismDenomination"),
       baptismDate:             baptismDateRaw ? new Date(baptismDateRaw) : null,
       baptismParish:           str(formData, "baptismParish"),
@@ -77,6 +88,7 @@ export async function upsertSacramentalRecord(
     },
     update: {
       isBaptized:              bool(formData, "isBaptized"),
+      baptismType:             baptismType(formData),
       baptismDenomination:     str(formData, "baptismDenomination"),
       baptismDate:             baptismDateRaw ? new Date(baptismDateRaw) : null,
       baptismParish:           str(formData, "baptismParish"),

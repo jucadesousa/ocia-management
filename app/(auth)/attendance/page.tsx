@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
+import { deriveOciaLabel } from "@/lib/ocia-stage";
 import { SessionSelector } from "./_components/session-selector";
 import { RosterClient } from "./_components/roster-client";
 import type { SessionType } from "@prisma/client";
@@ -55,10 +56,22 @@ export default async function AttendancePage({ searchParams }: { searchParams: S
   const group: "ENGLISH" | "SPANISH" =
     params.group === "ENGLISH" || params.group === "SPANISH" ? params.group : "ENGLISH";
 
-  const participants = await prisma.participant.findMany({
+  const rawParticipants = await prisma.participant.findMany({
     where: { cycleId: cycle.id, group, status: "ACTIVE" },
     orderBy: { lastName: "asc" },
+    include: {
+      sacramentalRecord: {
+        select: { baptismType: true, hasFirstCommunion: true, hasConfirmation: true },
+      },
+    },
   });
+
+  const participants = rawParticipants.map((p) => ({
+    id: p.id,
+    fullName: p.fullName,
+    preferredName: p.preferredName,
+    ociaLabel: deriveOciaLabel(p.sacramentalRecord),
+  }));
 
   const existingRecords = activeSessionId
     ? await prisma.attendanceRecord.findMany({ where: { sessionId: activeSessionId } })
