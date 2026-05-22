@@ -299,7 +299,7 @@ export default async function RosterPage({
                   <tr key={p.id}>
                     <td className="px-4 py-3 text-gray-500 text-xs">{i + 1}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">
-                      {p.fullName}
+                      {p.lastName}, {p.firstName}
                       {p.preferredName && (
                         <span className="ml-1 text-xs text-gray-400 italic">
                           ({p.preferredName})
