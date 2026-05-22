@@ -37,6 +37,26 @@ Items discussed but not yet implemented. Prioritize before picking up.
 
 ---
 
+## Remove Manual `ociaStage` Field — Rely Solely on OCIA Profile (Tech Debt)
+
+**Context:** The `Participant` table has a manual `ociaStage` enum field (INQUIRY, CATECHUMEN, CANDIDATE, ELECT, MYSTAGOGY, COMPLETED) that defaults to INQUIRY and must be updated by hand. The computed `deriveOciaLabel()` function already derives the correct stage automatically from sacramental data. Both are currently displayed on the detail page, list page, and reports — creating redundancy and confusion when the manual field goes stale.
+
+**Proposed solution:**
+- Remove the manual Stage field from all UI surfaces (detail page header, profile tab, list page, roster/contacts/ministry reports).
+- Rely exclusively on the computed OCIA Profile (`deriveOciaLabel()`) for stage display.
+- Drop the `ociaStage` column from the Prisma schema and database (requires a migration).
+- The ELECT and MYSTAGOGY stages (not covered by `deriveOciaLabel()`) are already trackable via the Election date and Easter Vigil date milestone fields on the sacramental record.
+
+**Files likely affected:**
+- `prisma/schema.prisma` — remove `ociaStage` field and `OciaStage` enum
+- `app/(auth)/participants/[id]/page.tsx` — remove Stage badge and Stage row
+- `app/(auth)/participants/page.tsx` — remove ociaStage badge and filter
+- `app/(auth)/participants/_components/filters.tsx` — remove stage filter
+- `app/(auth)/participants/_components/participant-form.tsx` — remove stage dropdown
+- `app/(auth)/reports/roster/page.tsx`, `contacts/page.tsx`, `ministry/page.tsx` — replace ociaStage with computed label
+
+---
+
 ## Photo Storage — Normalize File Extension (Tech Debt)
 
 **Context:** Participant photos are stored in Supabase at the path `{participantId}.{ext}`, where the extension comes from the uploaded file's name. If a participant first has a `.jpg` uploaded and later a `.png` is uploaded, both files remain in storage since the path differs. The active photo URL in the database points to the new file, but the old one is orphaned.
