@@ -7,12 +7,13 @@ import { logout } from "@/app/actions/auth";
 type Role = "ADMIN" | "VOLUNTEER";
 
 const adminLinks = [
-  { href: "/dashboard",    label: "Dashboard" },
-  { href: "/participants", label: "Participants" },
-  { href: "/sessions",     label: "Sessions" },
-  { href: "/attendance",   label: "Attendance" },
-  { href: "/reports",      label: "Reports" },
-  { href: "/settings",     label: "Settings" },
+  { href: "/dashboard",             label: "Dashboard" },
+  { href: "/participants",          label: "Participants" },
+  { href: "/participants/badges",   label: "Badges" },
+  { href: "/sessions",              label: "Sessions" },
+  { href: "/attendance",            label: "Attendance" },
+  { href: "/reports",               label: "Reports" },
+  { href: "/settings",              label: "Settings" },
 ];
 
 const volunteerLinks = [
@@ -58,7 +59,14 @@ export function Nav({ role, name }: { role: Role; name: string }) {
 
       <ul className="flex-1 px-2 py-3 space-y-0.5">
         {links.map(({ href, label }) => {
-          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          const active =
+            pathname === href ||
+            (href !== "/dashboard" &&
+              href !== "/participants" &&
+              pathname.startsWith(href)) ||
+            (href === "/participants" &&
+              pathname.startsWith("/participants") &&
+              !pathname.startsWith("/participants/badges"));
           return (
             <li key={href}>
               <Link

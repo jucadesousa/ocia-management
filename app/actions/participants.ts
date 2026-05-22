@@ -232,3 +232,21 @@ export async function registerParticipant(
 
   return { success: true };
 }
+
+export async function toggleBadgePrinted(formData: FormData): Promise<void> {
+  const user = await requireAuth();
+  if (user.role !== "ADMIN") return;
+  const id = formData.get("participantId") as string;
+  const printed = formData.get("printed") === "true";
+  await prisma.participant.update({ where: { id }, data: { badgePrinted: printed } });
+  revalidatePath("/participants/badges");
+}
+
+export async function markAllBadgesPrinted(formData: FormData): Promise<void> {
+  const user = await requireAuth();
+  if (user.role !== "ADMIN") return;
+  const ids = (formData.get("participantIds") as string).split(",").filter(Boolean);
+  await prisma.participant.updateMany({ where: { id: { in: ids } }, data: { badgePrinted: true } });
+  revalidatePath("/participants/badges");
+  redirect("/participants/badges");
+}

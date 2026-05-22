@@ -125,8 +125,8 @@ export async function uploadParticipantPhoto(
   const file = formData.get("photo") as File | null;
   if (!file || file.size === 0) return { error: "No file selected." };
 
-  const allowed = ["image/jpeg", "image/png", "image/webp"];
-  if (!allowed.includes(file.type)) return { error: "Only JPEG, PNG, or WebP images are accepted." };
+  const allowed = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+  if (!allowed.includes(file.type)) return { error: "Only JPEG, PNG, WebP, or HEIC images are accepted." };
 
   const ext  = file.name.split(".").pop() ?? "jpg";
   const path = `${participantId}.${ext}`;

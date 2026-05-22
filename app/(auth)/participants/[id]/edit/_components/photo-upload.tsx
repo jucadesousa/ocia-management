@@ -63,10 +63,10 @@ export function PhotoUploadForm({
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/*"
             className="block w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-gray-300 file:text-sm file:font-medium file:bg-white file:text-gray-700 hover:file:bg-gray-50 cursor-pointer"
           />
-          <p className="text-xs text-gray-400">JPEG, PNG, or WebP.</p>
+          <p className="text-xs text-gray-400">JPEG, PNG, WebP, or HEIC (iPhone).</p>
           {error && <p className="text-xs text-red-600">{error}</p>}
           <button
             type="submit"

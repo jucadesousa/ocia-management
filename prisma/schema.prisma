@@ -134,6 +134,7 @@ model Participant {
   status        ParticipantStatus @default(ACTIVE)
   ociaStage     OciaStage         @default(INQUIRY)
   sponsorName   String?
+  badgePrinted  Boolean           @default(false)
   // Relations
   cycleId       String
   cycle         Cycle             @relation(fields: [cycleId], references: [id])
