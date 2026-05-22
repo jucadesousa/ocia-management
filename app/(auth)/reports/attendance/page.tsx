@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
+import { deriveOciaLabel } from "@/lib/ocia-stage";
 import { ExcelExportButton } from "../_components/excel-export-button";
 import type { OciaStage } from "@prisma/client";
 
@@ -61,8 +62,11 @@ export default async function AttendanceReportPage({
         attendanceRecords: {
           where: { session: { status: "COMPLETED" } },
         },
+        sacramentalRecord: {
+          select: { baptismType: true, hasFirstCommunion: true, hasConfirmation: true },
+        },
       },
-      orderBy: { lastName: "asc" },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     }),
   ]);
 
@@ -144,13 +148,16 @@ export default async function AttendanceReportPage({
     "%": r.pct ?? "N/A",
   }));
 
+  const sessionKeys = sessions.map((s) => sessionLabel(s.type, s.number));
+  const pivotExportHeader = ["Name", "OCIA Profile", ...sessionKeys, "%"];
+
   const pivotExportData = participants.map((p) => {
     const rec = pivotMap[p.id];
-    const attended = sessions.filter((s) => rec[s.id] && rec[s.id] !== "ABSENT").length;
+    const attended = sessions.filter((s) => rec[s.id] && rec[s.id] !== "ABSENT" && rec[s.id] !== "EXCUSED").length;
     const pct = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : null;
     const entry: Record<string, string | number> = {
-      Name: p.fullName,
-      Group: p.group === "ENGLISH" ? "English" : "Spanish",
+      Name: `${p.lastName}, ${p.firstName}`,
+      "OCIA Profile": deriveOciaLabel(p.sacramentalRecord).label,
     };
     for (const s of sessions) {
       entry[sessionLabel(s.type, s.number)] = statusLetter[rec[s.id]] ?? "";
@@ -295,6 +302,7 @@ export default async function AttendanceReportPage({
               data={pivotExportData}
               filename="attendance-grid.xlsx"
               sheetName="Grid"
+              header={pivotExportHeader}
               className="no-print text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Export to Excel
@@ -314,9 +322,11 @@ export default async function AttendanceReportPage({
               <table className="text-xs border-collapse">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    {/* Sticky name header */}
                     <th className="sticky left-0 z-10 bg-gray-50 px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-r border-gray-200 min-w-[160px]">
                       Name
+                    </th>
+                    <th className="px-3 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-r border-gray-200 min-w-[140px]">
+                      OCIA Profile
                     </th>
                     {sessions.map((s) => (
                       <th
@@ -336,18 +346,23 @@ export default async function AttendanceReportPage({
                   {participants.map((p) => {
                     const rec = pivotMap[p.id];
                     const attended = sessions.filter(
-                      (s) => rec[s.id] && rec[s.id] !== "ABSENT"
+                      (s) => rec[s.id] && rec[s.id] !== "ABSENT" && rec[s.id] !== "EXCUSED"
                     ).length;
                     const pct =
                       totalSessions > 0
                         ? Math.round((attended / totalSessions) * 100)
                         : null;
                     const atRisk = pct !== null && pct < threshold;
+                    const ociaLabel = deriveOciaLabel(p.sacramentalRecord);
                     return (
                       <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                        {/* Sticky name cell */}
                         <td className="sticky left-0 z-10 bg-white px-4 py-2 font-medium text-gray-900 whitespace-nowrap border-r border-gray-100">
-                          {p.fullName}
+                          {p.lastName}, {p.firstName}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap border-r border-gray-100">
+                          <span className={`inline-flex px-1.5 py-0.5 rounded-full text-xs font-medium ${ociaLabel.color}`}>
+                            {ociaLabel.label}
+                          </span>
                         </td>
                         {sessions.map((s) => {
                           const status = rec[s.id];
@@ -369,6 +384,26 @@ export default async function AttendanceReportPage({
                     );
                   })}
                 </tbody>
+                <tfoot>
+                  <tr className="bg-gray-50 border-t-2 border-gray-300 font-semibold">
+                    <td className="sticky left-0 z-10 bg-gray-50 px-4 py-2 text-gray-700 whitespace-nowrap border-r border-gray-200">
+                      Present
+                    </td>
+                    <td className="border-r border-gray-200" />
+                    {sessions.map((s) => {
+                      const count = participants.filter((p) => {
+                        const status = pivotMap[p.id][s.id];
+                        return status && status !== "ABSENT" && status !== "EXCUSED";
+                      }).length;
+                      return (
+                        <td key={s.id} className="px-1 py-2 text-center text-gray-700">
+                          {count}
+                        </td>
+                      );
+                    })}
+                    <td className="border-l border-gray-200" />
+                  </tr>
+                </tfoot>
               </table>
             </div>
           )}
