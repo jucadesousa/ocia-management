@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { deriveOciaLabel } from "@/lib/ocia-stage";
 import { ExcelExportButton } from "../_components/excel-export-button";
+import { OciaProfileLegend } from "@/app/(auth)/participants/_components/ocia-profile-legend";
 import type { OciaStage } from "@prisma/client";
 
 const stageLabel: Record<OciaStage, string> = {
@@ -150,6 +151,35 @@ export default async function AttendanceReportPage({
 
   const sessionKeys = sessions.map((s) => sessionLabel(s.type, s.number));
   const pivotExportHeader = ["Name", "OCIA Profile", ...sessionKeys, "%"];
+
+  const sessionTotals = sessions.map((s) =>
+    participants.filter((p) => {
+      const status = pivotMap[p.id][s.id];
+      return status && status !== "ABSENT" && status !== "EXCUSED";
+    }).length
+  );
+
+  const pivotExportFooter: (string | number)[][] = [
+    ["Total Present", "", ...sessionTotals],
+    [],
+    ["Legend — Attendance Codes"],
+    ["Code", "Meaning"],
+    ["P",  "Present"],
+    ["L",  "Late"],
+    ["LE", "Left Early"],
+    ["E",  "Excused"],
+    ["A",  "Absent"],
+    [],
+    ["Legend — OCIA Profile"],
+    ["Profile", "Description"],
+    ["Catechumen",                   "Never baptized — needs Baptism, First Communion, and Confirmation at Easter Vigil."],
+    ["Candidate (Baptism Unverified)","Baptized in another Christian denomination — trinitarian validity not yet confirmed."],
+    ["Candidate",                    "Baptized in another Christian denomination with confirmed valid trinitarian baptism — seeking full communion."],
+    ["Candidate for Sacraments",     "Baptized Catholic but has not yet received First Communion."],
+    ["Candidate for Confirmation",   "Baptized Catholic with First Communion — still needs Confirmation."],
+    ["Fully Initiated",              "Has received all three sacraments: Baptism, Eucharist, and Confirmation."],
+    ["Unknown",                      "No sacramental record has been filled in yet."],
+  ];
 
   const pivotExportData = participants.map((p) => {
     const rec = pivotMap[p.id];
@@ -303,6 +333,7 @@ export default async function AttendanceReportPage({
               filename="attendance-grid.xlsx"
               sheetName="Grid"
               header={pivotExportHeader}
+              footer={pivotExportFooter}
               className="no-print text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Export to Excel
@@ -326,7 +357,10 @@ export default async function AttendanceReportPage({
                       Name
                     </th>
                     <th className="px-3 py-3 text-left font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap border-r border-gray-200 min-w-[140px]">
-                      OCIA Profile
+                      <span className="inline-flex items-center gap-0.5">
+                        OCIA Profile
+                        <OciaProfileLegend />
+                      </span>
                     </th>
                     {sessions.map((s) => (
                       <th
@@ -387,7 +421,7 @@ export default async function AttendanceReportPage({
                 <tfoot>
                   <tr className="bg-gray-50 border-t-2 border-gray-300 font-semibold">
                     <td className="sticky left-0 z-10 bg-gray-50 px-4 py-2 text-gray-700 whitespace-nowrap border-r border-gray-200">
-                      Present
+                      Total Present
                     </td>
                     <td className="border-r border-gray-200" />
                     {sessions.map((s) => {
