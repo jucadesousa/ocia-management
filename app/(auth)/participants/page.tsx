@@ -113,7 +113,12 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Participants</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-gray-900">Participants</h1>
+            <span className="md:hidden">
+              <OciaProfileLegend />
+            </span>
+          </div>
           <p className="text-sm text-gray-500 mt-0.5">{cycle.name}</p>
         </div>
         <Link
