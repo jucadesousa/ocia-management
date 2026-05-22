@@ -27,18 +27,26 @@ export function PhotoUploadForm({
     e.preventDefault();
     const file = fileRef.current?.files?.[0];
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setError("File is too large (max 10 MB). Try a lower-resolution photo.");
+      return;
+    }
     setUploading(true);
     setError(null);
-    const fd = new FormData();
-    fd.set("photo", file);
-    const result = await uploadParticipantPhoto(participantId, fd);
-    setUploading(false);
-    if (result.error) {
-      setError(result.error);
-    } else {
-      // Show the new photo immediately via object URL, then reload to persist
-      setCurrentUrl(URL.createObjectURL(file));
-      if (fileRef.current) fileRef.current.value = "";
+    try {
+      const fd = new FormData();
+      fd.set("photo", file);
+      const result = await uploadParticipantPhoto(participantId, fd);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setCurrentUrl(URL.createObjectURL(file));
+        if (fileRef.current) fileRef.current.value = "";
+      }
+    } catch {
+      setError("Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
     }
   }
 
