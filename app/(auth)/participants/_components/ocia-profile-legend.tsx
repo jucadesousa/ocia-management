@@ -19,7 +19,7 @@ export function OciaProfileLegend() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="ml-1 inline-flex items-center justify-center w-4 h-4 rounded-full bg-gray-200 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors text-xs font-bold leading-none"
+        className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-500 hover:bg-blue-100 hover:text-blue-600 transition-colors text-xs font-bold leading-none shrink-0"
         aria-label="OCIA Profile legend"
       >
         i
@@ -27,37 +27,40 @@ export function OciaProfileLegend() {
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
           onClick={() => setOpen(false)}
         >
           <div
-            className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6"
+            className="bg-white w-full sm:max-w-lg sm:mx-4 sm:rounded-xl rounded-t-2xl shadow-xl flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
+            {/* Header — sticky */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
               <h2 className="text-base font-semibold text-gray-900">OCIA Profile — Legend</h2>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+                className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors text-2xl leading-none"
                 aria-label="Close"
               >
                 ×
               </button>
             </div>
-            <ul className="space-y-3">
+
+            {/* Scrollable content */}
+            <div className="overflow-y-auto px-5 py-4 space-y-4">
               {LEGEND.map(({ label, color, desc }) => (
-                <li key={label} className="flex items-start gap-3">
-                  <span className={`mt-0.5 shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${color}`}>
+                <div key={label} className="flex flex-col gap-1">
+                  <span className={`self-start px-2 py-0.5 rounded-full text-xs font-medium ${color}`}>
                     {label}
                   </span>
-                  <span className="text-sm text-gray-600">{desc}</span>
-                </li>
+                  <p className="text-sm text-gray-600">{desc}</p>
+                </div>
               ))}
-            </ul>
-            <p className="mt-4 text-xs text-gray-400">
-              The profile is derived automatically from the sacramental record. Update it via the participant&apos;s Sacramental tab.
-            </p>
+              <p className="text-xs text-gray-400 pt-1 pb-2">
+                The profile is derived automatically from the sacramental record. Update it via the participant&apos;s Sacramental tab.
+              </p>
+            </div>
           </div>
         </div>
       )}
