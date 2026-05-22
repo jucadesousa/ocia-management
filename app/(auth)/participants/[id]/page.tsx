@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { DeleteParticipantButton } from "./_components/delete-button";
+import { deriveOciaLabel } from "@/lib/ocia-stage";
 import type { OciaStage } from "@prisma/client";
 
 type Props = {
@@ -79,6 +80,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
   const total = participant.attendanceRecords.length;
 
   const sr = participant.sacramentalRecord;
+  const ociaLabel = deriveOciaLabel(sr);
 
   const fullAddress = [
     participant.address,
@@ -121,6 +123,9 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
               </span>
               <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
                 {stageLabel[participant.ociaStage]}
+              </span>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${ociaLabel.color}`}>
+                {ociaLabel.label}
               </span>
               <span className={`text-xs px-2 py-0.5 rounded-full ${
                 participant.status === "ACTIVE" ? "bg-green-100 text-green-700" :
@@ -206,6 +211,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
           <dl className="px-4">
             <DetailRow label="Group" value={participant.group === "ENGLISH" ? "English" : "Spanish"} />
             <DetailRow label="Stage" value={stageLabel[participant.ociaStage]} />
+            <DetailRow label="OCIA Profile" value={ociaLabel.label} />
             <DetailRow label="Status" value={participant.status.charAt(0) + participant.status.slice(1).toLowerCase()} />
             <DetailRow label="Sponsor" value={participant.sponsorName} />
           </dl>
