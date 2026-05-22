@@ -144,7 +144,7 @@ export async function uploadParticipantPhoto(
 
   await prisma.participant.update({
     where: { id: participantId },
-    data: { photoUrl: publicUrl },
+    data: { photoUrl: `${publicUrl}?t=${Date.now()}` },
   });
 
   revalidatePath(`/participants/${participantId}`);
