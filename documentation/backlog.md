@@ -36,3 +36,18 @@ Items discussed but not yet implemented. Prioritize before picking up.
 - `app/(auth)/attendance/_components/roster-client.tsx` — same for roster pills
 
 ---
+
+## Photo Storage — Normalize File Extension (Tech Debt)
+
+**Context:** Participant photos are stored in Supabase at the path `{participantId}.{ext}`, where the extension comes from the uploaded file's name. If a participant first has a `.jpg` uploaded and later a `.png` is uploaded, both files remain in storage since the path differs. The active photo URL in the database points to the new file, but the old one is orphaned.
+
+**In practice:** iPhone always sends `.jpg` (iOS converts HEIC before upload), so this is unlikely to occur. It only surfaces if someone switches formats (e.g., desktop PNG followed by iPhone JPG).
+
+**Proposed solution:**
+- Always store photos as `{participantId}.jpg` regardless of uploaded extension.
+- Before uploading, delete any existing file for that participant (list the bucket folder and remove whatever is there) to prevent orphaned files.
+
+**Files likely affected:**
+- `app/actions/sacramental.ts` — `uploadParticipantPhoto` function
+
+---
