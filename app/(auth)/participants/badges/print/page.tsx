@@ -159,7 +159,11 @@ export default async function BadgePrintPage() {
             print-color-adjust: exact;
           }
 
-          .cut-h, .cut-v { background: #555; }
+          .cut-h, .cut-v {
+            background: #555;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
         }
       `}</style>
 
