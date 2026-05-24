@@ -14,6 +14,7 @@ const adminLinks = [
   { href: "/attendance",            label: "Attendance" },
   { href: "/reports",               label: "Reports" },
   { href: "/settings",              label: "Settings" },
+  { href: "/docs",                  label: "Documentation" },
 ];
 
 const volunteerLinks = [
@@ -21,6 +22,7 @@ const volunteerLinks = [
   { href: "/attendance",   label: "Attendance" },
   { href: "/participants", label: "Participants" },
   { href: "/reports",      label: "Reports" },
+  { href: "/docs",         label: "Documentation" },
 ];
 
 function HamburgerIcon() {
