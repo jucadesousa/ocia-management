@@ -137,6 +137,13 @@ export default async function BadgePrintPage() {
 
         /* ── Print styles ───────────────────────────────────── */
         @media print {
+          /* Reset layout overflow so all pages reach the printer */
+          html, body, body > div, main {
+            overflow: visible !important;
+            height: auto !important;
+            max-height: none !important;
+          }
+
           body { background: white; }
           .toolbar { display: none !important; }
 
