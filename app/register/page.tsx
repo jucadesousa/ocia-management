@@ -12,7 +12,7 @@ const labelCls = "block text-sm font-medium text-gray-700 mb-1";
 
 const T = {
   en: {
-    title: "Rite of Christian Initiation of Adults",
+    title: "Order of Christian Initiation of Adults",
     subtitle: "Saint Bartholomew the Apostle Catholic Church · Katy, TX",
     intro:
       "Interested in learning more about the Catholic faith? Fill out this form and someone from our team will contact you.",
