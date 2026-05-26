@@ -220,7 +220,7 @@ function ReportsTab() {
             A full grid showing every active participant as a row and every session as a column. The OCIA Profile badge is shown for each participant. Attendance totals are calculated per participant and per session. Exportable to Excel.
           </KV>
           <KV term="Roster">
-            Two sections: the <em>Session Roster</em> (attendance status for a selected session) and the <em>Blank Volunteer Sheet</em> (a printable sign-in table with checkboxes for P / A / L / LE / E). Names are listed Last, First.
+            Two sections: the <em>Session Roster</em> (attendance status for a selected session) and the <em>Blank Volunteer Sheet</em> (a printable sign-in table with checkboxes for P / A / E). Names are listed Last, First.
           </KV>
           <KV term="Ministry">
             Lists participants alongside their sponsor and family information. Useful for ministry team coordination.
