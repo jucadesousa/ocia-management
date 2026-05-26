@@ -75,7 +75,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
   ];
 
   const attended = participant.attendanceRecords.filter(
-    (r) => r.status !== "ABSENT"
+    (r) => r.status === "PRESENT"
   ).length;
   const total = participant.attendanceRecords.length;
 
@@ -340,7 +340,6 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
                     <td className="px-4 py-3">
                       <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                         r.status === "PRESENT" ? "bg-green-100 text-green-700" :
-                        r.status === "LATE" ? "bg-yellow-100 text-yellow-700" :
                         r.status === "EXCUSED" ? "bg-blue-100 text-blue-700" :
                         "bg-gray-100 text-gray-600"
                       }`}>

@@ -80,7 +80,7 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
       include: {
         attendanceRecords: {
           where: {
-            status: { not: "ABSENT" },
+            status: "PRESENT",
             session: { status: "COMPLETED" },
           },
           select: { id: true },

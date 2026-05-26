@@ -17,21 +17,17 @@ type Props = {
   initialStatuses: Record<string, string>;
 };
 
-const STATUS_CYCLE = ["ABSENT", "PRESENT", "LATE", "LEFT_EARLY", "EXCUSED"] as const;
+const STATUS_CYCLE = ["ABSENT", "PRESENT", "EXCUSED"] as const;
 
 const STATUS_LABELS: Record<string, string> = {
   PRESENT: "Present",
   ABSENT: "Absent",
-  LATE: "Late",
-  LEFT_EARLY: "Left early",
   EXCUSED: "Excused",
 };
 
 const STATUS_BADGE: Record<string, string> = {
   PRESENT: "bg-green-100 text-green-700",
   ABSENT: "bg-gray-100 text-gray-500",
-  LATE: "bg-yellow-100 text-yellow-700",
-  LEFT_EARLY: "bg-orange-100 text-orange-700",
   EXCUSED: "bg-blue-100 text-blue-700",
 };
 

@@ -19,19 +19,15 @@ const statusLabel: Record<SessionStatus, string> = {
 };
 
 const attendanceLabel: Record<string, string> = {
-  PRESENT:    "Present",
-  ABSENT:     "Absent",
-  LATE:       "Late",
-  LEFT_EARLY: "Left Early",
-  EXCUSED:    "Excused",
+  PRESENT: "Present",
+  ABSENT:  "Absent",
+  EXCUSED: "Excused",
 };
 
 const attendanceBadge: Record<string, string> = {
-  PRESENT:    "bg-green-100 text-green-700",
-  ABSENT:     "bg-gray-100 text-gray-500",
-  LATE:       "bg-amber-100 text-amber-700",
-  LEFT_EARLY: "bg-orange-100 text-orange-700",
-  EXCUSED:    "bg-blue-100 text-blue-700",
+  PRESENT: "bg-green-100 text-green-700",
+  ABSENT:  "bg-gray-100 text-gray-500",
+  EXCUSED: "bg-blue-100 text-blue-700",
 };
 
 function sessionLabel(type: SessionType, number: number): string {
@@ -74,7 +70,7 @@ export default async function SessionDetailPage({ params }: Props) {
   const spanishRecords = records.filter((r) => r.group === "SPANISH");
 
   function presentCount(recs: typeof records) {
-    return recs.filter((r) => r.status !== "ABSENT").length;
+    return recs.filter((r) => r.status === "PRESENT").length;
   }
 
   return (

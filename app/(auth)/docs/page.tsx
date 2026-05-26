@@ -181,10 +181,8 @@ function AttendanceTab() {
 
       <Section title="Attendance codes">
         <dl className="space-y-2">
-          <KV term="P — Present">Attended the full session.</KV>
+          <KV term="P — Present">Attended the session.</KV>
           <KV term="A — Absent">Did not attend with no prior notice.</KV>
-          <KV term="L — Late">Arrived after the session started.</KV>
-          <KV term="LE — Left Early">Left before the session ended.</KV>
           <KV term="E — Excused">Notified in advance and had a valid reason.</KV>
         </dl>
       </Section>
@@ -195,7 +193,7 @@ function AttendanceTab() {
         </P>
         <UL>
           <LI>Go to <strong>Reports → Roster</strong> and print the <em>Blank Volunteer Sheet</em> for the correct session and group.</LI>
-          <LI>Volunteers use the sheet during the session, marking P / A / L / LE / E for each name.</LI>
+          <LI>Volunteers use the sheet during the session, marking P / A / E for each name.</LI>
           <LI>After the session, an admin or volunteer enters the marks into the system under <strong>Attendance</strong>.</LI>
         </UL>
       </Section>

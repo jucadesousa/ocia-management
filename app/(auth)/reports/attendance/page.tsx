@@ -2,31 +2,16 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { deriveOciaLabel } from "@/lib/ocia-stage";
-import { ExcelExportButton } from "../_components/excel-export-button";
 import { OciaProfileLegend } from "@/app/(auth)/participants/_components/ocia-profile-legend";
-import type { OciaStage } from "@prisma/client";
-
-const stageLabel: Record<OciaStage, string> = {
-  INQUIRY: "Inquiry",
-  CATECHUMEN: "Catechumen",
-  CANDIDATE: "Candidate",
-  ELECT: "Elect",
-  MYSTAGOGY: "Mystagogy",
-  COMPLETED: "Completed",
-};
 
 const statusLetter: Record<string, string> = {
   PRESENT: "P",
-  LATE: "L",
-  LEFT_EARLY: "LE",
   EXCUSED: "E",
   ABSENT: "A",
 };
 
 const statusCellClass: Record<string, string> = {
   PRESENT: "text-green-700",
-  LATE: "text-amber-600",
-  LEFT_EARLY: "text-orange-600",
   EXCUSED: "text-blue-600",
   ABSENT: "text-red-600 font-semibold",
 };
@@ -79,13 +64,14 @@ export default async function AttendanceReportPage({
 
   const totalSessions = sessions.length;
 
-  // ── Summary rows (only ABSENT counts as not present) ──────────────────────
+  // ── Summary rows (only PRESENT counts as attended) ───────────────────────
 
   type ParticipantRow = {
     id: string;
-    fullName: string;
+    lastName: string;
+    firstName: string;
     group: string;
-    ociaStage: OciaStage;
+    ociaProfile: string;
     attended: number;
     total: number;
     pct: number | null;
@@ -93,15 +79,16 @@ export default async function AttendanceReportPage({
   };
 
   const rows: ParticipantRow[] = participants.map((p) => {
-    const attended = p.attendanceRecords.filter((r) => r.status !== "ABSENT").length;
+    const attended = p.attendanceRecords.filter((r) => r.status === "PRESENT").length;
     const total = totalSessions;
     const pct = total > 0 ? Math.round((attended / total) * 100) : null;
     const atRisk = pct !== null && pct < threshold;
     return {
       id: p.id,
-      fullName: p.fullName,
+      lastName: p.lastName,
+      firstName: p.firstName,
       group: p.group === "ENGLISH" ? "English" : "Spanish",
-      ociaStage: p.ociaStage,
+      ociaProfile: deriveOciaLabel(p.sacramentalRecord).label,
       attended,
       total,
       pct,
@@ -110,11 +97,9 @@ export default async function AttendanceReportPage({
   });
 
   const atRiskRows = rows.filter((r) => r.atRisk);
-  const sortedRows = [...rows].sort((a, b) => {
-    if (a.atRisk && !b.atRisk) return -1;
-    if (!a.atRisk && b.atRisk) return 1;
-    return a.fullName.localeCompare(b.fullName);
-  });
+  const sortedRows = [...rows].sort(
+    (a, b) => a.lastName.localeCompare(b.lastName) || a.firstName.localeCompare(b.firstName)
+  );
 
   function pctClass(pct: number | null, atRisk: boolean): string {
     if (pct === null) return "text-gray-400";
@@ -138,63 +123,7 @@ export default async function AttendanceReportPage({
     return type === "WEEKLY" ? String(number) : `R${number}`;
   }
 
-  // ── Exports ────────────────────────────────────────────────────────────────
 
-  const summaryExportData = sortedRows.map((r) => ({
-    Name: r.fullName,
-    Group: r.group,
-    Stage: stageLabel[r.ociaStage],
-    Attended: r.attended,
-    Total: r.total,
-    "%": r.pct ?? "N/A",
-  }));
-
-  const sessionKeys = sessions.map((s) => sessionLabel(s.type, s.number));
-  const pivotExportHeader = ["Name", "OCIA Profile", ...sessionKeys, "%"];
-
-  const sessionTotals = sessions.map((s) =>
-    participants.filter((p) => {
-      const status = pivotMap[p.id][s.id];
-      return status && status !== "ABSENT" && status !== "EXCUSED";
-    }).length
-  );
-
-  const pivotExportFooter: (string | number)[][] = [
-    ["Total Present", "", ...sessionTotals],
-    [],
-    ["Legend — Attendance Codes"],
-    ["Code", "Meaning"],
-    ["P",  "Present"],
-    ["L",  "Late"],
-    ["LE", "Left Early"],
-    ["E",  "Excused"],
-    ["A",  "Absent"],
-    [],
-    ["Legend — OCIA Profile"],
-    ["Profile", "Description"],
-    ["Catechumen",                   "Never baptized — needs Baptism, First Communion, and Confirmation at Easter Vigil."],
-    ["Candidate (Baptism Unverified)","Baptized in another Christian denomination — trinitarian validity not yet confirmed."],
-    ["Candidate",                    "Baptized in another Christian denomination with confirmed valid trinitarian baptism — seeking full communion."],
-    ["Candidate for Sacraments",     "Baptized Catholic but has not yet received First Communion."],
-    ["Candidate for Confirmation",   "Baptized Catholic with First Communion — still needs Confirmation."],
-    ["Fully Initiated",              "Has received all three sacraments: Baptism, Eucharist, and Confirmation."],
-    ["Unknown",                      "No sacramental record has been filled in yet."],
-  ];
-
-  const pivotExportData = participants.map((p) => {
-    const rec = pivotMap[p.id];
-    const attended = sessions.filter((s) => rec[s.id] && rec[s.id] !== "ABSENT" && rec[s.id] !== "EXCUSED").length;
-    const pct = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : null;
-    const entry: Record<string, string | number> = {
-      Name: `${p.lastName}, ${p.firstName}`,
-      "OCIA Profile": deriveOciaLabel(p.sacramentalRecord).label,
-    };
-    for (const s of sessions) {
-      entry[sessionLabel(s.type, s.number)] = statusLetter[rec[s.id]] ?? "";
-    }
-    entry["%"] = pct ?? "N/A";
-    return entry;
-  });
 
   // ── Shared summary table ───────────────────────────────────────────────────
 
@@ -206,9 +135,9 @@ export default async function AttendanceReportPage({
           {data.map((r) => (
             <li key={r.id} className="px-4 py-3 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{r.fullName}</p>
+                <p className="text-sm font-medium text-gray-900 truncate">{r.lastName}, {r.firstName}</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  {r.group} · {stageLabel[r.ociaStage]}
+                  {r.group} · {r.ociaProfile}
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {r.attended} of {r.total} sessions
@@ -225,7 +154,18 @@ export default async function AttendanceReportPage({
         <table className="hidden md:table w-full text-sm">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
-              {["Full Name", "Group", "Stage", "Attended", "Sessions", "%"].map((h) => (
+              {["Name", "Group"].map((h) => (
+                <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  {h}
+                </th>
+              ))}
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                <span className="inline-flex items-center gap-0.5">
+                  OCIA Profile
+                  <OciaProfileLegend />
+                </span>
+              </th>
+              {["Attended", "Sessions", "%"].map((h) => (
                 <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                   {h}
                 </th>
@@ -235,9 +175,9 @@ export default async function AttendanceReportPage({
           <tbody className="divide-y divide-gray-100">
             {data.map((r) => (
               <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-4 py-3 font-medium text-gray-900">{r.fullName}</td>
+                <td className="px-4 py-3 font-medium text-gray-900">{r.lastName}, {r.firstName}</td>
                 <td className="px-4 py-3 text-gray-600">{r.group}</td>
-                <td className="px-4 py-3 text-gray-600">{stageLabel[r.ociaStage]}</td>
+                <td className="px-4 py-3 text-gray-600">{r.ociaProfile}</td>
                 <td className="px-4 py-3 text-gray-700">{r.attended}</td>
                 <td className="px-4 py-3 text-gray-700">{r.total}</td>
                 <td className={`px-4 py-3 ${pctClass(r.pct, r.atRisk)}`}>
@@ -296,14 +236,12 @@ export default async function AttendanceReportPage({
         <div className="rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">All Participants</h2>
-            <ExcelExportButton
-              data={summaryExportData}
-              filename="attendance-report.xlsx"
-              sheetName="Attendance"
+            <a
+              href="/reports/attendance/summary-export"
               className="no-print text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Export to Excel
-            </ExcelExportButton>
+            </a>
           </div>
           {sortedRows.length === 0 ? (
             <div className="p-8 text-center text-gray-400 text-sm bg-white">No active participants found.</div>
@@ -322,22 +260,16 @@ export default async function AttendanceReportPage({
               <p className="text-xs text-gray-500 mt-0.5">
                 Weekly sessions (1, 2…) · Reflections (R1, R2…) ·{" "}
                 <span className="text-green-700">P</span>{" "}
-                <span className="text-amber-600">L</span>{" "}
-                <span className="text-orange-600">LE</span>{" "}
                 <span className="text-blue-600">E</span>{" "}
                 <span className="text-red-600">A</span>
               </p>
             </div>
-            <ExcelExportButton
-              data={pivotExportData}
-              filename="attendance-grid.xlsx"
-              sheetName="Grid"
-              header={pivotExportHeader}
-              footer={pivotExportFooter}
+            <a
+              href="/reports/attendance/grid-export"
               className="no-print text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Export to Excel
-            </ExcelExportButton>
+            </a>
           </div>
 
           {totalSessions === 0 ? (
@@ -380,7 +312,7 @@ export default async function AttendanceReportPage({
                   {participants.map((p) => {
                     const rec = pivotMap[p.id];
                     const attended = sessions.filter(
-                      (s) => rec[s.id] && rec[s.id] !== "ABSENT" && rec[s.id] !== "EXCUSED"
+                      (s) => rec[s.id] === "PRESENT"
                     ).length;
                     const pct =
                       totalSessions > 0
@@ -427,7 +359,7 @@ export default async function AttendanceReportPage({
                     {sessions.map((s) => {
                       const count = participants.filter((p) => {
                         const status = pivotMap[p.id][s.id];
-                        return status && status !== "ABSENT" && status !== "EXCUSED";
+                        return status === "PRESENT";
                       }).length;
                       return (
                         <td key={s.id} className="px-1 py-2 text-center text-gray-700">

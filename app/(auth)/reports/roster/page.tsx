@@ -32,16 +32,12 @@ const stageLabel: Record<OciaStage, string> = {
 const attendanceStatusLabel: Record<string, string> = {
   PRESENT: "Present",
   ABSENT: "Absent",
-  LATE: "Late",
-  LEFT_EARLY: "Left Early",
   EXCUSED: "Excused",
 };
 
 const attendanceStatusClass: Record<string, string> = {
   PRESENT: "text-green-700",
   ABSENT: "text-gray-400",
-  LATE: "text-yellow-600",
-  LEFT_EARLY: "text-orange-600",
   EXCUSED: "text-blue-600",
 };
 
@@ -261,7 +257,7 @@ export default async function RosterPage({
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Blank Volunteer Sheet</h2>
             <p className="text-sm text-gray-500">
-              P = Present · A = Absent · L = Late · LE = Left Early · E = Excused
+              P = Present · A = Absent · E = Excused
             </p>
           </div>
           <PrintButton className="text-sm font-medium px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors shrink-0">
@@ -284,7 +280,7 @@ export default async function RosterPage({
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     Name
                   </th>
-                  {["P", "A", "L", "LE", "E"].map((col) => (
+                  {["P", "A", "E"].map((col) => (
                     <th
                       key={col}
                       className="px-3 py-3 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider w-10"
@@ -306,7 +302,7 @@ export default async function RosterPage({
                         </span>
                       )}
                     </td>
-                    {["P", "A", "L", "LE", "E"].map((col) => (
+                    {["P", "A", "E"].map((col) => (
                       <td key={col} className="px-3 py-3 text-center">
                         <span className="inline-block w-5 h-5 border border-gray-400 rounded" />
                       </td>

@@ -49,8 +49,6 @@ enum SessionStatus {
 enum AttendanceStatus {
   PRESENT
   ABSENT
-  LATE
-  LEFT_EARLY
   EXCUSED
 }
 
