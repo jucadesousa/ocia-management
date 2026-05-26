@@ -21,7 +21,7 @@ export default async function QRPage() {
 
       {/* Title */}
       <h1 className="text-white text-4xl md:text-5xl font-bold text-center leading-tight mb-10">
-        Rite of Christian Initiation<br />of Adults
+        Order of Christian Initiation<br />of Adults
       </h1>
 
       {/* QR card */}
