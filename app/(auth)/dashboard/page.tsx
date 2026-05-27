@@ -50,7 +50,7 @@ export default async function DashboardPage() {
     {
       label: "Active participants",
       value: participantCount,
-      href: "/participants",
+      href: user.role === "ADMIN" ? "/participants" : null,
     },
     {
       label: "Sessions scheduled",
@@ -80,20 +80,24 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, href, alert }) => (
-          <Link
-            key={label}
-            href={href}
-            className={`bg-white rounded-xl border p-5 hover:shadow-sm transition-all ${
-              alert ? "border-red-200 hover:border-red-300" : "border-gray-200 hover:border-blue-200"
-            }`}
-          >
-            <p className="text-sm text-gray-500">{label}</p>
-            <p className={`mt-1 text-2xl font-semibold ${alert ? "text-red-600" : "text-gray-900"}`}>
-              {value}
-            </p>
-          </Link>
-        ))}
+        {stats.map(({ label, value, href, alert }) => {
+          const className = `bg-white rounded-xl border p-5 transition-all ${
+            alert ? "border-red-200" : "border-gray-200"
+          } ${href ? (alert ? "hover:shadow-sm hover:border-red-300" : "hover:shadow-sm hover:border-blue-200") : ""}`;
+          const content = (
+            <>
+              <p className="text-sm text-gray-500">{label}</p>
+              <p className={`mt-1 text-2xl font-semibold ${alert ? "text-red-600" : "text-gray-900"}`}>
+                {value}
+              </p>
+            </>
+          );
+          return href ? (
+            <Link key={label} href={href} className={className}>{content}</Link>
+          ) : (
+            <div key={label} className={className}>{content}</div>
+          );
+        })}
       </div>
 
       {!cycle && (
