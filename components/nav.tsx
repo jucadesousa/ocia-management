@@ -18,11 +18,10 @@ const adminLinks = [
 ];
 
 const volunteerLinks = [
-  { href: "/dashboard",    label: "Dashboard" },
-  { href: "/attendance",   label: "Attendance" },
-  { href: "/participants", label: "Participants" },
-  { href: "/reports",      label: "Reports" },
-  { href: "/docs",         label: "Documentation" },
+  { href: "/dashboard",  label: "Dashboard" },
+  { href: "/attendance", label: "Attendance" },
+  { href: "/reports",    label: "Reports" },
+  { href: "/docs",       label: "Documentation" },
 ];
 
 function HamburgerIcon() {

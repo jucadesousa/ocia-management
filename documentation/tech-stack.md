@@ -259,7 +259,7 @@ At registration, `baptismType` is **auto-suggested** from the registrant's answe
 | Other Christian, unverified | Candidate (Baptism Unverified) |
 | Other Christian, valid trinitarian | Candidate |
 | Catholic — no First Communion | Candidate for Sacraments |
-| Catholic — has Communion, no Confirmation | Candidate for Confirmation |
+| Catholic — has Communion, no Confirmation | Catholic Candidate |
 | Catholic — fully initiated | Fully Initiated |
 
 The label is computed server-side and rendered as a color-coded pill on each row of the attendance roster.

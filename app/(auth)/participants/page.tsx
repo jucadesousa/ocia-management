@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { deriveOciaLabel } from "@/lib/ocia-stage";
@@ -45,7 +46,8 @@ type SearchParams = Promise<{
 }>;
 
 export default async function ParticipantsPage({ searchParams }: { searchParams: SearchParams }) {
-  await requireAuth();
+  const user = await requireAuth();
+  if (user.role !== "ADMIN") notFound();
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.page ?? "1", 10));
   const search = params.search?.trim() ?? "";

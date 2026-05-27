@@ -16,7 +16,7 @@ const LABELS: Record<string, OciaLabel> = {
   candidate_unverified:        { label: "Candidate (Baptism Unverified)", color: "bg-yellow-100 text-yellow-700" },
   candidate:                   { label: "Candidate",                     color: "bg-blue-100 text-blue-700" },
   candidate_for_sacraments:    { label: "Candidate for Sacraments",      color: "bg-orange-100 text-orange-700" },
-  candidate_for_confirmation:  { label: "Candidate for Confirmation",    color: "bg-teal-100 text-teal-700" },
+  candidate_for_confirmation:  { label: "Catholic Candidate",            color: "bg-teal-100 text-teal-700" },
   fully_initiated:             { label: "Fully Initiated",               color: "bg-green-100 text-green-700" },
   unknown:                     { label: "Unknown",                       color: "bg-gray-100 text-gray-500" },
 };

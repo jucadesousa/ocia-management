@@ -7,6 +7,7 @@ type Participant = {
   id: string;
   fullName: string;
   preferredName: string | null;
+  photoUrl: string | null;
   ociaLabel: { label: string; color: string };
 };
 
@@ -140,8 +141,15 @@ export function RosterClient({ sessionId, group, participants, initialStatuses }
               onClick={() => cycleStatus(p.id)}
               className="w-full flex items-center gap-3 px-4 py-4 hover:bg-gray-50 active:bg-gray-100 transition-colors border-b border-gray-100 last:border-0 text-left"
             >
-              <div className="w-9 h-9 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-semibold shrink-0">
-                {getInitials(p.fullName)}
+              <div className="w-9 h-9 rounded-full shrink-0 overflow-hidden">
+                {p.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={p.photoUrl} alt={p.fullName} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-semibold">
+                    {getInitials(p.fullName)}
+                  </div>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900">{p.fullName}</p>

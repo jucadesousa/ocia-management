@@ -91,7 +91,7 @@ function OverviewTab() {
             { label: "Candidate", color: "bg-blue-100 text-blue-700", desc: "Validly baptized in another Christian tradition. Seeking full communion." },
             { label: "Candidate (Baptism Unverified)", color: "bg-yellow-100 text-yellow-700", desc: "Baptism in another tradition not yet verified." },
             { label: "Candidate for Sacraments", color: "bg-orange-100 text-orange-700", desc: "Catholic baptized, but has not received First Communion or Confirmation." },
-            { label: "Candidate for Confirmation", color: "bg-teal-100 text-teal-700", desc: "Catholic baptized and has First Communion, but not yet Confirmation." },
+            { label: "Catholic Candidate", color: "bg-teal-100 text-teal-700", desc: "Catholic baptized and has First Communion, but not yet Confirmation." },
             { label: "Fully Initiated", color: "bg-green-100 text-green-700", desc: "Has received all three sacraments of initiation." },
           ].map(({ label, color, desc }) => (
             <div key={label} className="flex items-start gap-3">
@@ -108,7 +108,7 @@ function OverviewTab() {
             Full access. Can create and edit participants, manage sessions, take attendance, view all reports, print badges, and manage users and settings.
           </KV>
           <KV term="Volunteer">
-            Read and attendance access. Can view participants, take attendance, and view reports. Cannot create or edit participant records or access settings.
+            Attendance and reporting access. Can take attendance and view reports. Cannot view or edit participant records, manage sessions, or access settings.
           </KV>
         </dl>
       </Section>
@@ -205,7 +205,7 @@ function AttendanceTab() {
       </Section>
 
       <Note>
-        Attendance is saved automatically as you make changes — there is no Save button. Each change takes effect immediately.
+        Changes are not saved until you click <strong>Save attendance</strong> at the bottom of the page. If you navigate away with unsaved changes, the browser will warn you before leaving.
       </Note>
     </div>
   );
@@ -331,7 +331,7 @@ function SettingsTab() {
           Manage admin and volunteer accounts under <strong>Settings → Users</strong>. You can invite new users, change roles, reset passwords, and deactivate accounts.
         </P>
         <P>
-          There are two roles: <strong>Admin</strong> (full access) and <strong>Volunteer</strong> (read and attendance access). Assign the minimum role needed — volunteers cannot edit participant records or access settings.
+          There are two roles: <strong>Admin</strong> (full access) and <strong>Volunteer</strong> (attendance and reporting access). Assign the minimum role needed — volunteers cannot view or edit participant records, manage sessions, or access settings.
         </P>
       </Section>
 
@@ -364,14 +364,14 @@ export default async function DocsPage({ searchParams }: Props) {
   const isAdmin = user.role === "ADMIN";
 
   const tabs = [
-    { key: "overview",      label: "Overview" },
-    { key: "participants",  label: "Participants" },
-    { key: "attendance",    label: "Attendance" },
-    { key: "reports",       label: "Reports" },
+    { key: "overview",   label: "Overview" },
+    { key: "attendance", label: "Attendance" },
+    { key: "reports",    label: "Reports" },
     ...(isAdmin ? [
-      { key: "sessions",  label: "Sessions" },
-      { key: "badges",    label: "Badges" },
-      { key: "settings",  label: "Settings" },
+      { key: "participants", label: "Participants" },
+      { key: "sessions",     label: "Sessions" },
+      { key: "badges",       label: "Badges" },
+      { key: "settings",     label: "Settings" },
     ] : []),
   ];
 
@@ -405,13 +405,13 @@ export default async function DocsPage({ searchParams }: Props) {
 
       {/* Content */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
-        {activeTab === "overview"      && <OverviewTab />}
-        {activeTab === "participants"  && <ParticipantsTab />}
-        {activeTab === "attendance"    && <AttendanceTab />}
-        {activeTab === "reports"       && <ReportsTab />}
-        {isAdmin && activeTab === "sessions" && <SessionsTab />}
-        {isAdmin && activeTab === "badges"   && <BadgesTab />}
-        {isAdmin && activeTab === "settings" && <SettingsTab />}
+        {activeTab === "overview"     && <OverviewTab />}
+        {activeTab === "attendance"   && <AttendanceTab />}
+        {activeTab === "reports"      && <ReportsTab />}
+        {isAdmin && activeTab === "participants" && <ParticipantsTab />}
+        {isAdmin && activeTab === "sessions"     && <SessionsTab />}
+        {isAdmin && activeTab === "badges"       && <BadgesTab />}
+        {isAdmin && activeTab === "settings"     && <SettingsTab />}
       </div>
     </div>
   );

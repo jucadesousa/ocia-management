@@ -122,7 +122,7 @@ export async function GET() {
     ["Candidate (Baptism Unverified)","Baptized in another Christian denomination — trinitarian validity not yet confirmed."],
     ["Candidate",                     "Baptized in another Christian denomination with confirmed valid trinitarian baptism — seeking full communion."],
     ["Candidate for Sacraments",      "Baptized Catholic but has not yet received First Communion."],
-    ["Candidate for Confirmation",    "Baptized Catholic with First Communion — still needs Confirmation."],
+    ["Catholic Candidate",            "Baptized Catholic with First Communion — still needs Confirmation."],
     ["Fully Initiated",               "Has received all three sacraments: Baptism, Eucharist, and Confirmation."],
     ["Unknown",                       "No sacramental record has been filled in yet."],
   ].forEach(([profile, desc]) => {

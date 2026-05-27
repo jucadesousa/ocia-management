@@ -57,6 +57,24 @@ Items discussed but not yet implemented. Prioritize before picking up.
 
 ---
 
+## Sponsor Management
+
+**Context:** The registration form captures a sponsor name (`sponsorName` text field on `Participant`), but there is no dedicated view to manage sponsors or see which participants have one assigned and which don't. Coordinators currently have no way to get a quick list of participants without a sponsor so they can follow up.
+
+**Proposed solution:**
+- Add a "Sponsors" report or filter view showing all active participants with their sponsor name (or a blank/missing indicator).
+- Allow filtering/sorting by whether a sponsor is assigned (assigned vs. unassigned).
+- Optionally: promote `sponsorName` from a free-text field to a proper `Sponsor` entity (name, phone, email) linked to one or more participants — enabling sponsor-level communication and reuse across cycles.
+
+**Open question:** Is the short-term need just visibility (a report), or is there also a need to manage sponsor contact info and track their involvement more formally?
+
+**Files likely affected:**
+- `app/(auth)/reports/` — new sponsor report page
+- `prisma/schema.prisma` — if promoting to a `Sponsor` entity
+- `app/(auth)/participants/_components/participant-form.tsx` — sponsor lookup/autocomplete if relational
+
+---
+
 ## Photo Storage — Normalize File Extension (Tech Debt)
 
 **Context:** Participant photos are stored in Supabase at the path `{participantId}.{ext}`, where the extension comes from the uploaded file's name. If a participant first has a `.jpg` uploaded and later a `.png` is uploaded, both files remain in storage since the path differs. The active photo URL in the database points to the new file, but the old one is orphaned.

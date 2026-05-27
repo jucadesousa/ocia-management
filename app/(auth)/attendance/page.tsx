@@ -70,6 +70,7 @@ export default async function AttendancePage({ searchParams }: { searchParams: S
     id: p.id,
     fullName: p.fullName,
     preferredName: p.preferredName,
+    photoUrl: p.photoUrl,
     ociaLabel: deriveOciaLabel(p.sacramentalRecord),
   }));
 
