@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireAuth } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
+import { Breadcrumb } from "@/components/breadcrumb";
 import type { SessionStatus, SessionType } from "@prisma/client";
 
 type Props = { params: Promise<{ id: string }> };
@@ -75,11 +76,10 @@ export default async function SessionDetailPage({ params }: Props) {
 
   return (
     <div className="p-6 max-w-2xl space-y-6">
-      <nav className="text-sm text-gray-500 flex items-center gap-1.5">
-        <Link href="/sessions" className="hover:text-blue-600">Sessions</Link>
-        <span>/</span>
-        <span className="text-gray-900">{label}</span>
-      </nav>
+      <Breadcrumb crumbs={[
+        { label: "Sessions", href: "/sessions" },
+        { label },
+      ]} />
 
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">

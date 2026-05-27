@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { ExcelExportButton } from "../_components/excel-export-button";
 import { PrintButton } from "../_components/print-button";
+import { Breadcrumb } from "@/components/breadcrumb";
 import type { Group, OciaStage } from "@prisma/client";
 
 const stageLabel: Record<OciaStage, string> = {
@@ -84,9 +85,7 @@ export default async function ContactsReportPage({
       <style>{`@media print { .no-print { display: none !important; } }`}</style>
 
       <div className="no-print">
-        <Link href="/reports" className="text-sm text-gray-500 hover:text-blue-600">
-          ← Reports
-        </Link>
+        <Breadcrumb crumbs={[{ label: "Reports", href: "/reports" }, { label: "Contact List" }]} />
       </div>
 
       <div className="flex items-start justify-between flex-wrap gap-3">

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { markAllBadgesPrinted } from "@/app/actions/participants";
 import { PrintTrigger } from "./_components/print-trigger";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 export default async function BadgePrintPage() {
   const user = await requireAuth();
@@ -29,9 +30,16 @@ export default async function BadgePrintPage() {
   return (
     <>
       <style>{`
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        /* Scoped reset — only badge elements, not the sidebar/layout */
+        .badge-wrap, .badge, .badge-content, .badge-name, .badge-photo,
+        .cut-h, .cut-v {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
 
-        body { background: #e5e7eb; }
+        /* Gray canvas behind the badge sheets */
+        .badge-canvas { background: #e5e7eb; }
 
         /* ── Screen toolbar ─────────────────────────────────── */
         .toolbar {
@@ -40,7 +48,9 @@ export default async function BadgePrintPage() {
           z-index: 100;
           background: white;
           border-bottom: 1px solid #e5e7eb;
-          padding: 12px 24px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+          padding: 0 24px;
+          height: 56px;
           display: flex;
           align-items: center;
           gap: 12px;
@@ -144,7 +154,7 @@ export default async function BadgePrintPage() {
             max-height: none !important;
           }
 
-          body { background: white; }
+          body, .badge-canvas { background: white; }
           .toolbar { display: none !important; }
 
           .badge-sheet {
@@ -169,48 +179,49 @@ export default async function BadgePrintPage() {
 
       {/* Screen toolbar — hidden on print */}
       <div className="toolbar no-print">
-        <a
-          href="/participants/badges"
-          className="text-sm text-gray-500 hover:text-gray-900"
-        >
-          ← Back
-        </a>
-        <PrintTrigger />
-        <form action={markAllBadgesPrinted} className="ml-auto">
-          <input type="hidden" name="participantIds" value={allIds} />
-          <button
-            type="submit"
-            className="text-sm font-medium bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-          >
-            Mark all as printed &amp; go back
-          </button>
-        </form>
-        <span className="text-sm text-gray-400">
-          {participants.length} badge{participants.length !== 1 ? "s" : ""} ·{" "}
-          {pages.length} page{pages.length !== 1 ? "s" : ""}
-        </span>
+        <Breadcrumb crumbs={[
+          { label: "Badges", href: "/participants/badges" },
+          { label: "Print Preview" },
+        ]} />
+        <div className="flex items-center gap-3 ml-auto">
+          <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full font-medium">
+            {participants.length} badge{participants.length !== 1 ? "s" : ""} · {pages.length} page{pages.length !== 1 ? "s" : ""}
+          </span>
+          <PrintTrigger />
+          <form action={markAllBadgesPrinted}>
+            <input type="hidden" name="participantIds" value={allIds} />
+            <button
+              type="submit"
+              className="text-sm font-medium bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+            >
+              Mark all printed
+            </button>
+          </form>
+        </div>
       </div>
 
       {/* Badge sheets */}
-      {pages.map((page, pi) => (
-        <div key={pi} className="badge-sheet">
-          {page.map((p) => (
-            <div key={p.id} className="badge-wrap">
-              {/* Corner cut marks */}
-              <span className="cut-h tl-h" /><span className="cut-v tl-v" />
-              <span className="cut-h tr-h" /><span className="cut-v tr-v" />
-              <span className="cut-h bl-h" /><span className="cut-v bl-v" />
-              <span className="cut-h br-h" /><span className="cut-v br-v" />
-              <div className="badge">
-                <div className="badge-content">
-                  <img src={p.photoUrl!} alt={p.fullName} className="badge-photo" />
-                  <span className="badge-name">{p.firstName} {p.lastName}</span>
+      <div className="badge-canvas">
+        {pages.map((page, pi) => (
+          <div key={pi} className="badge-sheet">
+            {page.map((p) => (
+              <div key={p.id} className="badge-wrap">
+                {/* Corner cut marks */}
+                <span className="cut-h tl-h" /><span className="cut-v tl-v" />
+                <span className="cut-h tr-h" /><span className="cut-v tr-v" />
+                <span className="cut-h bl-h" /><span className="cut-v bl-v" />
+                <span className="cut-h br-h" /><span className="cut-v br-v" />
+                <div className="badge">
+                  <div className="badge-content">
+                    <img src={p.photoUrl!} alt={p.fullName} className="badge-photo" />
+                    <span className="badge-name">{p.firstName} {p.lastName}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ))}
+            ))}
+          </div>
+        ))}
+      </div>
     </>
   );
 }

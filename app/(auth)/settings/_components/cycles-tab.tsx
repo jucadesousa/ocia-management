@@ -3,6 +3,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { createCycle, updateCycle, setCurrentCycle } from "@/app/actions/settings";
 import type { SettingsFormState } from "@/app/actions/settings";
+import { useActionToast } from "@/hooks/use-action-toast";
 
 type Cycle = {
   id: string;
@@ -36,14 +37,10 @@ function CycleForm({
     action,
     undefined
   );
+  useActionToast(state);
 
   return (
     <form action={formAction} className="space-y-4">
-      {state?.error && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 px-4 py-3 rounded-lg">
-          {state.error}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
