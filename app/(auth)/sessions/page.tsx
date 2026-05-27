@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { CalendarDays } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { SessionFilters } from "./_components/session-filters";
@@ -95,7 +96,11 @@ export default async function SessionsPage({ searchParams }: { searchParams: Sea
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {sessions.length === 0 ? (
-          <div className="p-8 text-center text-gray-400 text-sm">No sessions found.</div>
+          <div className="p-12 text-center">
+            <CalendarDays className="mx-auto mb-3 text-gray-300" size={40} />
+            <p className="text-sm font-medium text-gray-400">No sessions found</p>
+            <p className="text-xs text-gray-400 mt-1">Try adjusting your filters.</p>
+          </div>
         ) : (
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">

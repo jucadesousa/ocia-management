@@ -1,27 +1,39 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
+import {
+  LayoutDashboard,
+  Users,
+  BadgeCheck,
+  CalendarDays,
+  ClipboardList,
+  BarChart2,
+  Settings,
+  BookOpen,
+  LogOut,
+} from "lucide-react";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
 
 type Role = "ADMIN" | "VOLUNTEER";
 
 const adminLinks = [
-  { href: "/dashboard",             label: "Dashboard" },
-  { href: "/participants",          label: "Participants" },
-  { href: "/participants/badges",   label: "Badges" },
-  { href: "/sessions",              label: "Sessions" },
-  { href: "/attendance",            label: "Attendance" },
-  { href: "/reports",               label: "Reports" },
-  { href: "/settings",              label: "Settings" },
-  { href: "/docs",                  label: "Documentation" },
+  { href: "/dashboard",           label: "Dashboard",     icon: LayoutDashboard },
+  { href: "/participants",        label: "Participants",  icon: Users },
+  { href: "/participants/badges", label: "Badges",        icon: BadgeCheck },
+  { href: "/sessions",            label: "Sessions",      icon: CalendarDays },
+  { href: "/attendance",          label: "Attendance",    icon: ClipboardList },
+  { href: "/reports",             label: "Reports",       icon: BarChart2 },
+  { href: "/settings",            label: "Settings",      icon: Settings },
+  { href: "/docs",                label: "Documentation", icon: BookOpen },
 ];
 
 const volunteerLinks = [
-  { href: "/dashboard",  label: "Dashboard" },
-  { href: "/attendance", label: "Attendance" },
-  { href: "/reports",    label: "Reports" },
-  { href: "/docs",       label: "Documentation" },
+  { href: "/dashboard",  label: "Dashboard",     icon: LayoutDashboard },
+  { href: "/attendance", label: "Attendance",    icon: ClipboardList },
+  { href: "/reports",    label: "Reports",       icon: BarChart2 },
+  { href: "/docs",       label: "Documentation", icon: BookOpen },
 ];
 
 function HamburgerIcon() {
@@ -52,14 +64,14 @@ export function Nav({ role, name }: { role: Role; name: string }) {
 
   const sidebarContent = (
     <>
-      <div className="px-4 py-5 border-b border-gray-200">
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">OCIA Management</p>
-        <p className="mt-1 text-sm font-medium text-gray-700 truncate">{name}</p>
+      <div className="px-4 py-5 border-b border-gray-700 flex flex-col items-center">
+        <Image src="/LumenLogo.svg" alt="Lumen Logo" width={72} height={72} priority />
+        <p className="mt-2 text-sm font-medium text-white truncate">{name}</p>
         <p className="text-xs text-gray-400">{role === "ADMIN" ? "Admin" : "Volunteer"}</p>
       </div>
 
       <ul className="flex-1 px-2 py-3 space-y-0.5">
-        {links.map(({ href, label }) => {
+        {links.map(({ href, label, icon }) => {
           const active =
             pathname === href ||
             (href !== "/dashboard" &&
@@ -68,16 +80,18 @@ export function Nav({ role, name }: { role: Role; name: string }) {
             (href === "/participants" &&
               pathname.startsWith("/participants") &&
               !pathname.startsWith("/participants/badges"));
+          const Icon = icon;
           return (
             <li key={href}>
               <Link
                 href={href}
-                className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors ${
                   active
-                    ? "bg-blue-50 text-blue-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-lumen/20 text-lumen font-medium border-l-2 border-lumen"
+                    : "text-gray-300 hover:bg-gray-700 hover:text-white border-l-2 border-transparent"
                 }`}
               >
+                <Icon size={16} className="shrink-0" />
                 {label}
               </Link>
             </li>
@@ -89,8 +103,9 @@ export function Nav({ role, name }: { role: Role; name: string }) {
         <form action={logout}>
           <button
             type="submit"
-            className="w-full text-left flex items-center px-3 py-2 text-sm text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
+            className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-700 hover:text-white transition-colors"
           >
+            <LogOut size={16} className="shrink-0" />
             Sign out
           </button>
         </form>
@@ -101,16 +116,16 @@ export function Nav({ role, name }: { role: Role; name: string }) {
   return (
     <>
       {/* ── Mobile top bar ───────────────────────────────────────── */}
-      <header className="md:hidden fixed top-0 inset-x-0 h-14 bg-white border-b border-gray-200 flex items-center px-4 z-20 print:hidden">
+      <header className="md:hidden fixed top-0 inset-x-0 h-14 bg-gray-900 border-b border-gray-700 flex items-center px-4 z-20 print:hidden">
         <button
           onClick={() => setOpen((v) => !v)}
-          className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors"
           aria-label={open ? "Close navigation" : "Open navigation"}
           aria-expanded={open}
         >
           {open ? <CloseIcon /> : <HamburgerIcon />}
         </button>
-        <span className="ml-3 text-sm font-semibold text-gray-700">OCIA Management</span>
+        <Image src="/LumenLogo_Horizontal.svg" alt="Lumen Catholic" width={120} height={80} className="ml-3 h-9 w-auto" />
       </header>
 
       {/* ── Backdrop (mobile) ────────────────────────────────────── */}
@@ -125,7 +140,7 @@ export function Nav({ role, name }: { role: Role; name: string }) {
       {/* ── Sidebar ──────────────────────────────────────────────── */}
       <nav
         className={`
-          flex flex-col bg-white border-r border-gray-200 w-56 shrink-0
+          flex flex-col bg-gray-900 border-r border-gray-700 w-56 shrink-0
           fixed inset-y-0 left-0 z-40 print:hidden
           transition-transform duration-200 ease-in-out
           md:relative md:translate-x-0 md:h-full

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { RosterControls } from "./_components/roster-controls";
@@ -134,9 +135,7 @@ export default async function RosterPage({
 
       {/* Controls — hidden on print */}
       <div className="no-print space-y-3">
-        <Link href="/reports" className="text-sm text-gray-500 hover:text-blue-600">
-          ← Reports
-        </Link>
+        <Breadcrumb crumbs={[{ label: "Reports", href: "/reports" }, { label: "Session Roster" }]} />
 
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>

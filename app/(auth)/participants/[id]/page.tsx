@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { DeleteParticipantButton } from "./_components/delete-button";
 import { deriveOciaLabel } from "@/lib/ocia-stage";
+import { Breadcrumb } from "@/components/breadcrumb";
 import type { OciaStage } from "@prisma/client";
 
 type Props = {
@@ -108,10 +109,11 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
             </div>
           )}
           <div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-              <Link href="/participants" className="hover:text-blue-600">Participants</Link>
-              <span>/</span>
-              <span>{participant.fullName}</span>
+            <div className="mb-1">
+              <Breadcrumb crumbs={[
+                { label: "Participants", href: "/participants" },
+                { label: participant.fullName },
+              ]} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">{participant.fullName}</h1>
             {participant.preferredName && (

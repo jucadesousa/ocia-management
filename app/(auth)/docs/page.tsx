@@ -60,9 +60,9 @@ function KV({ term, children }: { term: string; children: React.ReactNode }) {
 function OverviewTab() {
   return (
     <div className="space-y-6">
-      <Section title="What is OCIA Management?">
+      <Section title="What is Lumen Catholic?">
         <P>
-          OCIA Management is a parish tool for tracking adults through the Order of Christian Initiation of Adults (OCIA) — formerly known as RCIA. It covers the full journey from initial enrollment through the Easter Vigil, with tools for participant records, weekly attendance, sacramental history, and reporting.
+          Lumen Catholic is a parish tool for tracking adults through the Order of Christian Initiation of Adults (OCIA) — formerly known as RCIA. It covers the full journey from initial enrollment through the Easter Vigil, with tools for participant records, weekly attendance, sacramental history, and reporting.
         </P>
       </Section>
 
@@ -381,7 +381,7 @@ export default async function DocsPage({ searchParams }: Props) {
     <div className="p-6 max-w-3xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Documentation</h1>
-        <p className="text-sm text-gray-500 mt-1">How to use OCIA Management</p>
+        <p className="text-sm text-gray-500 mt-1">How to use Lumen Catholic</p>
       </div>
 
       {/* Tab bar — horizontally scrollable on mobile */}

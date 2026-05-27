@@ -47,7 +47,7 @@ export async function GET() {
   const totalSessions = rawSessions.length;
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = "OCIA Management";
+  wb.creator = "Lumen Catholic";
   wb.created = new Date();
 
   const ws = wb.addWorksheet("Attendance Summary");

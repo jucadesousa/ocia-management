@@ -4,6 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { PrintButton } from "./_components/print-button";
 import type { OciaStage } from "@prisma/client";
+import type { Viewport } from "next";
+
+export const viewport: Viewport = { width: 816 };
 
 type Props = { params: Promise<{ id: string }> };
 

@@ -1,16 +1,19 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/dal";
+import { BarChart2, ClipboardList, Phone, Layers } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 export default async function ReportsPage() {
   await requireAuth();
 
-  const cards = [
+  const cards: { href: string; title: string; description: string; badge: string; icon: LucideIcon }[] = [
     {
       href: "/reports/attendance",
       title: "Attendance Report",
       description:
         "At-risk participants, per-session summaries, and attendance percentages. Exportable to Excel.",
       badge: "Excel export",
+      icon: BarChart2,
     },
     {
       href: "/reports/roster",
@@ -18,6 +21,7 @@ export default async function ReportsPage() {
       description:
         "Printable participant roster for a session. Includes a blank volunteer attendance sheet.",
       badge: "Printable",
+      icon: ClipboardList,
     },
     {
       href: "/reports/contacts",
@@ -25,6 +29,7 @@ export default async function ReportsPage() {
       description:
         "Phone and email for all active participants, filterable by group.",
       badge: "Print · Excel",
+      icon: Phone,
     },
     {
       href: "/reports/ministry",
@@ -32,6 +37,7 @@ export default async function ReportsPage() {
       description:
         "Stage distribution, missing documents, and sacrament readiness.",
       badge: "Excel export",
+      icon: Layers,
     },
   ];
 
@@ -49,14 +55,15 @@ export default async function ReportsPage() {
           <Link
             key={card.href}
             href={card.href}
-            className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all"
+            className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-md transition-all"
           >
             <div className="flex flex-col h-full gap-3">
               <div className="flex-1">
-                <p className="text-base font-semibold text-gray-900">
-                  {card.title}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">{card.description}</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <card.icon size={20} className="text-blue-500 shrink-0" />
+                  <p className="text-base font-semibold text-gray-900">{card.title}</p>
+                </div>
+                <p className="text-sm text-gray-500">{card.description}</p>
               </div>
               <div className="flex justify-end">
                 <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">

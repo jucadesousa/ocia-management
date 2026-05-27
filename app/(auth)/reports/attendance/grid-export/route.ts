@@ -76,7 +76,7 @@ export async function GET() {
   // ── Build workbook ──────────────────────────────────────────────────────────
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = "OCIA Management";
+  wb.creator = "Lumen Catholic";
   wb.created = new Date();
 
   const ws = wb.addWorksheet("Attendance Grid", {

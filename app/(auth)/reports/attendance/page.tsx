@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { deriveOciaLabel } from "@/lib/ocia-stage";
 import { OciaProfileLegend } from "@/app/(auth)/participants/_components/ocia-profile-legend";
 
@@ -196,9 +197,7 @@ export default async function AttendanceReportPage({
       <style>{`@media print { .no-print { display: none !important; } }`}</style>
 
       <div className="no-print">
-        <Link href="/reports" className="text-sm text-gray-500 hover:text-blue-600">
-          ← Reports
-        </Link>
+        <Breadcrumb crumbs={[{ label: "Reports", href: "/reports" }, { label: "Attendance Report" }]} />
       </div>
 
       <div>
