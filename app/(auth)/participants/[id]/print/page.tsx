@@ -166,14 +166,25 @@ export default async function PrintPage({ params }: Props) {
           </div>
 
           {/* ── Church header ── */}
-          <div className="text-center mb-5">
-            <p className="italic text-sm">St. Bartholomew the Apostle Catholic Church</p>
-            <p className="text-[1.6rem] font-bold tracking-tight mt-0.5">
-              <span className="text-[2rem]">O</span>rder of{" "}
-              <span className="text-[2rem]">C</span>hristian{" "}
-              <span className="text-[2rem]">I</span>nitiation of{" "}
-              <span className="text-[2rem]">A</span>dults
-            </p>
+          <div className="flex items-center gap-4 mb-5">
+            {/* Passport-style photo box */}
+            <div className="shrink-0 w-[72px] h-[90px] border border-black overflow-hidden">
+              {participant.photoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={participant.photoUrl} alt={participant.fullName} className="w-full h-full object-cover" />
+              ) : null}
+            </div>
+            <div className="flex-1 text-center">
+              <p className="italic text-sm">St. Bartholomew the Apostle Catholic Church</p>
+              <p className="text-[1.6rem] font-bold tracking-tight mt-0.5">
+                <span className="text-[2rem]">O</span>rder of{" "}
+                <span className="text-[2rem]">C</span>hristian{" "}
+                <span className="text-[2rem]">I</span>nitiation of{" "}
+                <span className="text-[2rem]">A</span>dults
+              </p>
+            </div>
+            {/* Spacer to keep title visually centred */}
+            <div className="shrink-0 w-[72px]" />
           </div>
 
           {/* ── PERSONAL INFORMATION ── */}
