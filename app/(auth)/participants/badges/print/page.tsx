@@ -164,6 +164,11 @@ export default async function BadgePrintPage() {
             break-after: page;
           }
 
+          .badge-sheet:last-child {
+            page-break-after: avoid;
+            break-after: avoid;
+          }
+
           .badge {
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
