@@ -43,9 +43,9 @@ export default async function BadgePrintPage() {
 
         /* ── Screen toolbar ─────────────────────────────────── */
         .toolbar {
-          position: fixed;
-          top: 0; left: 0; right: 0;
-          z-index: 100;
+          position: sticky;
+          top: 0;
+          z-index: 10;
           background: white;
           border-bottom: 1px solid #e5e7eb;
           box-shadow: 0 1px 3px rgba(0,0,0,0.06);
@@ -63,7 +63,7 @@ export default async function BadgePrintPage() {
           width: 8.5in;
           min-height: 11in;
           background: white;
-          margin: 80px auto 32px;
+          margin: 32px auto 32px;
           padding: 0.8in 0.65in;
           display: grid;
           grid-template-columns: repeat(2, 3.5in);
