@@ -12,6 +12,7 @@ import {
   Settings,
   BookOpen,
   LogOut,
+  KeyRound,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
@@ -99,11 +100,22 @@ export function Nav({ role, name }: { role: Role; name: string }) {
         })}
       </ul>
 
-      <div className="px-2 pb-4">
+      <div className="px-2 pb-4 space-y-0.5">
+        <Link
+          href="/account/password"
+          className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors border-l-2 ${
+            pathname === "/account/password"
+              ? "bg-lumen/20 text-lumen font-medium border-lumen"
+              : "text-gray-400 hover:bg-gray-700 hover:text-white border-transparent"
+          }`}
+        >
+          <KeyRound size={16} className="shrink-0" />
+          Change password
+        </Link>
         <form action={logout}>
           <button
             type="submit"
-            className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-700 hover:text-white transition-colors"
+            className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-sm text-gray-400 rounded-lg hover:bg-gray-700 hover:text-white transition-colors border-l-2 border-transparent"
           >
             <LogOut size={16} className="shrink-0" />
             Sign out
