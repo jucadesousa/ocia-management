@@ -163,7 +163,7 @@ export function CyclesTab({
                   </div>
                   <p className="text-xs text-gray-500 mt-0.5">
                     Year {c.year} · At-risk threshold: {c.atRiskThresholdPercent}%
-                    {c.startDate && ` · Starts ${new Date(c.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`}
+                    {c.startDate && ` · Starts ${new Date(c.startDate).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" })}`}
                   </p>
                 </div>
 
