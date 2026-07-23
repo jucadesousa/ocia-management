@@ -71,7 +71,7 @@ export function Nav({ role, name }: { role: Role; name: string }) {
         <p className="text-xs text-gray-400">{role === "ADMIN" ? "Admin" : "Volunteer"}</p>
       </div>
 
-      <ul className="flex-1 px-2 py-3 space-y-0.5">
+      <ul className="flex-1 overflow-y-auto min-h-0 px-2 py-3 space-y-0.5">
         {links.map(({ href, label, icon }) => {
           const active =
             pathname === href ||
