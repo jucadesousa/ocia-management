@@ -102,64 +102,114 @@ export default async function SessionsPage({ searchParams }: { searchParams: Sea
             <p className="text-xs text-gray-400 mt-1">Try adjusting your filters.</p>
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                {["Session", "Title", "Presenter", "Date", "Status", ...(isAdmin ? ["Actions"] : [])].map((h) => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+          <>
+            {/* Mobile cards */}
+            <ul className="md:hidden divide-y divide-gray-100">
               {sessions.map((s) => (
-                <tr
+                <li
                   key={s.id}
-                  className={`hover:bg-gray-50 transition-colors${s.status === "CANCELLED" ? " opacity-60" : ""}`}
+                  className={`px-4 py-3 space-y-1${s.status === "CANCELLED" ? " opacity-60" : ""}`}
                 >
-                  <td className="px-4 py-3">
+                  <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/sessions/${s.id}`}
                       className="font-medium text-gray-900 hover:text-blue-600"
                     >
                       {sessionLabel(s.type, s.number)}
                     </Link>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">{s.title ?? <span className="text-gray-400">—</span>}</td>
-                  <td className="px-4 py-3 text-gray-600">{s.presenter ?? <span className="text-gray-400">—</span>}</td>
-                  <td className="px-4 py-3 text-gray-600">{formatDate(s.date)}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[s.status]}`}>
+                    <span className={`inline-flex shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[s.status]}`}>
                       {statusLabel[s.status]}
                     </span>
-                  </td>
+                  </div>
+                  <p className="text-sm text-gray-600">{s.title ?? <span className="text-gray-400">—</span>}</p>
+                  <div className="flex items-center justify-between gap-2 text-xs text-gray-500">
+                    <span>{s.presenter ?? "—"}</span>
+                    <span className="shrink-0">{formatDate(s.date)}</span>
+                  </div>
                   {isAdmin && (
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Link
-                          href={`/sessions/${s.id}/edit`}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          Edit
-                        </Link>
-                        {s.status !== "CANCELLED" && (
-                          <form action={cancelSession.bind(null, s.id)}>
-                            <button
-                              type="submit"
-                              className="text-xs text-red-500 hover:text-red-700 font-medium"
-                            >
-                              Cancel
-                            </button>
-                          </form>
-                        )}
-                      </div>
-                    </td>
+                    <div className="flex items-center gap-3 pt-1">
+                      <Link
+                        href={`/sessions/${s.id}/edit`}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        Edit
+                      </Link>
+                      {s.status !== "CANCELLED" && (
+                        <form action={cancelSession.bind(null, s.id)}>
+                          <button
+                            type="submit"
+                            className="text-xs text-red-500 hover:text-red-700 font-medium"
+                          >
+                            Cancel
+                          </button>
+                        </form>
+                      )}
+                    </div>
                   )}
-                </tr>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+
+            {/* Desktop table */}
+            <table className="hidden md:table w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  {["Session", "Title", "Presenter", "Date", "Status", ...(isAdmin ? ["Actions"] : [])].map((h) => (
+                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {sessions.map((s) => (
+                  <tr
+                    key={s.id}
+                    className={`hover:bg-gray-50 transition-colors${s.status === "CANCELLED" ? " opacity-60" : ""}`}
+                  >
+                    <td className="px-4 py-3">
+                      <Link
+                        href={`/sessions/${s.id}`}
+                        className="font-medium text-gray-900 hover:text-blue-600"
+                      >
+                        {sessionLabel(s.type, s.number)}
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{s.title ?? <span className="text-gray-400">—</span>}</td>
+                    <td className="px-4 py-3 text-gray-600">{s.presenter ?? <span className="text-gray-400">—</span>}</td>
+                    <td className="px-4 py-3 text-gray-600">{formatDate(s.date)}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[s.status]}`}>
+                        {statusLabel[s.status]}
+                      </span>
+                    </td>
+                    {isAdmin && (
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/sessions/${s.id}/edit`}
+                            className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            Edit
+                          </Link>
+                          {s.status !== "CANCELLED" && (
+                            <form action={cancelSession.bind(null, s.id)}>
+                              <button
+                                type="submit"
+                                className="text-xs text-red-500 hover:text-red-700 font-medium"
+                              >
+                                Cancel
+                              </button>
+                            </form>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
     </div>
