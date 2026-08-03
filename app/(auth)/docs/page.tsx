@@ -175,7 +175,7 @@ function CalendarTab({ isAdmin }: { isAdmin: boolean }) {
           A live calendar for the current cycle, combining Weekly and Reflection sessions with everything else on the parish's OCIA schedule — rites (Acceptance, Welcoming, Election, Scrutinies, Sending), holy days of obligation, feast days, special services of prayer or blessing, Sunday Mass/dismissal notes, and parish/team events like the Painted Churches Pilgrimage.
         </P>
         <P>
-          It's meant to replace the manually-built PDF calendar previously emailed or printed for participants — the goal is one always-current source instead of a document that goes stale the moment a date shifts.
+          It's meant to mirror the manually-built PDF calendar previously emailed or printed for participants — the goal is one always-current source instead of a document that goes stale the moment a date shifts.
         </P>
       </Section>
 
