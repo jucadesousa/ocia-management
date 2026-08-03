@@ -222,6 +222,9 @@ function ReportsTab() {
           <KV term="Roster">
             Two sections: the <em>Session Roster</em> (attendance status for a selected session) and the <em>Blank Volunteer Sheet</em> (a printable sign-in table with checkboxes for P / A / E). Names are listed Last, First.
           </KV>
+          <KV term="Session Schedule">
+            A full list of sessions for the current cycle with their title, presenter, date, and status. Visible to volunteers as well as admins, since the <strong>Sessions</strong> management page in the sidebar is admin-only.
+          </KV>
           <KV term="Ministry">
             Lists participants alongside their sponsor and family information. Useful for ministry team coordination.
           </KV>
