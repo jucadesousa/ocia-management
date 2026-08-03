@@ -167,6 +167,57 @@ function ParticipantsTab() {
   );
 }
 
+function CalendarTab({ isAdmin }: { isAdmin: boolean }) {
+  return (
+    <div className="space-y-6">
+      <Section title="What it is">
+        <P>
+          A live calendar for the current cycle, combining Weekly and Reflection sessions with everything else on the parish's OCIA schedule — rites (Acceptance, Welcoming, Election, Scrutinies, Sending), holy days of obligation, feast days, special services of prayer or blessing, Sunday Mass/dismissal notes, and parish/team events like the Painted Churches Pilgrimage.
+        </P>
+        <P>
+          It's meant to replace the manually-built PDF calendar previously emailed or printed for participants — the goal is one always-current source instead of a document that goes stale the moment a date shifts.
+        </P>
+      </Section>
+
+      <Section title="Where to find it">
+        <P>
+          Click <strong>Calendar</strong> in the sidebar. It's also reachable at a public link, <strong>ocia.sousacloud.com/calendar</strong>, with no login required — this is the link to share with participants directly (text, email, parish website, printed handout).
+        </P>
+        <Note>
+          The public link and the sidebar link are the same page. Logged-in staff keep their sidebar; anyone visiting the link directly (participants, prospective inquirers) sees a clean page with no login prompt.
+        </Note>
+      </Section>
+
+      <Section title="Views">
+        <dl className="space-y-3">
+          <KV term="Desktop">A full month grid, with a color legend above it and prev/next month navigation.</KV>
+          <KV term="Phone">An agenda list instead of a grid — grouped by month with sticky headers, scrolling through the whole cycle rather than one month at a time.</KV>
+        </dl>
+        <P>
+          Cancelled sessions (e.g. a holiday week) still appear, shown dimmed and struck through, so the calendar communicates "nothing happens this week" rather than silently omitting it.
+        </P>
+      </Section>
+
+      <Section title="Printing">
+        <P>
+          The <em>Print</em> button on the calendar page produces a clean, sidebar-free printout via the browser's print function — the same underlying pattern used by the report pages.
+        </P>
+      </Section>
+
+      {isAdmin && (
+        <Section title="Managing events (Admin)">
+          <P>
+            Go to <strong>Settings → Calendar</strong> to add, edit, or delete non-session events. Each event has a category (Rite, Holy Week, Holy Day, Feast Day, Special Service, Sunday Mass, Team Event, or Other), a date, and optional time/location text. Use <em>Highlight as a milestone event</em> for entries that deserve extra visual emphasis, like the Rite of Election or Easter Vigil.
+          </P>
+          <P>
+            Weekly and Reflection sessions themselves are still managed from the <strong>Sessions</strong> page, not here — this tab only covers everything else on the calendar.
+          </P>
+        </Section>
+      )}
+    </div>
+  );
+}
+
 function AttendanceTab() {
   return (
     <div className="space-y-6">
@@ -368,6 +419,7 @@ export default async function DocsPage({ searchParams }: Props) {
 
   const tabs = [
     { key: "overview",   label: "Overview" },
+    { key: "calendar",   label: "Calendar" },
     { key: "attendance", label: "Attendance" },
     { key: "reports",    label: "Reports" },
     ...(isAdmin ? [
@@ -409,6 +461,7 @@ export default async function DocsPage({ searchParams }: Props) {
       {/* Content */}
       <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
         {activeTab === "overview"     && <OverviewTab />}
+        {activeTab === "calendar"     && <CalendarTab isAdmin={isAdmin} />}
         {activeTab === "attendance"   && <AttendanceTab />}
         {activeTab === "reports"      && <ReportsTab />}
         {isAdmin && activeTab === "participants" && <ParticipantsTab />}
