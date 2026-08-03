@@ -3,6 +3,7 @@ import { getCalendarEntries, currentMonthKey, monthKeyOf } from "@/lib/calendar"
 import { MonthNav } from "@/components/calendar/month-nav";
 import { MonthGrid } from "@/components/calendar/month-grid";
 import { AgendaList } from "@/components/calendar/agenda-list";
+import { CategoryLegend } from "@/components/calendar/category-legend";
 import { PrintButton } from "./_components/print-button";
 
 type SearchParams = Promise<{ month?: string }>;
@@ -32,7 +33,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Sea
         }
       `}</style>
 
-      <div className="max-w-4xl mx-auto p-6 space-y-4">
+      <div className="max-w-5xl mx-auto p-6 space-y-4">
         <div className="no-print flex items-center justify-between flex-wrap gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">OCIA Calendar</h1>
@@ -50,10 +51,13 @@ export default async function CalendarPage({ searchParams }: { searchParams: Sea
             St. Bartholomew the Apostle Catholic Church — OCIA Calendar — {cycle.name}
           </p>
 
-          <MonthNav month={month} />
-          <div className="mt-3">
-            <MonthGrid entries={monthEntries} month={month} />
+          <div className="mb-3">
+            <MonthNav month={month} />
           </div>
+          <div className="mb-3">
+            <CategoryLegend entries={monthEntries} />
+          </div>
+          <MonthGrid entries={monthEntries} month={month} />
         </div>
 
         <AgendaList entries={allEntries} />

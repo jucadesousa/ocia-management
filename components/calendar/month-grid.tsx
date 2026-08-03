@@ -11,6 +11,7 @@ function dateKey(date: Date): string {
 
 export function MonthGrid({ entries, month }: { entries: CalendarEntry[]; month: string }) {
   const weeks = buildMonthMatrix(month);
+  const todayKey = dateKey(new Date());
 
   const entriesByDay = new Map<string, CalendarEntry[]>();
   for (const entry of entries) {
@@ -20,10 +21,10 @@ export function MonthGrid({ entries, month }: { entries: CalendarEntry[]; month:
   }
 
   return (
-    <div className="hidden md:block bg-white rounded-xl border border-gray-200 overflow-hidden">
+    <div className="hidden md:block bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="grid grid-cols-7 bg-gray-50 border-b border-gray-200">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="px-2 py-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          <div key={d} className="px-2 py-2.5 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
             {d}
           </div>
         ))}
@@ -31,20 +32,30 @@ export function MonthGrid({ entries, month }: { entries: CalendarEntry[]; month:
       <div className="grid grid-cols-7">
         {weeks.flatMap((week, wi) =>
           week.map((day, di) => {
-            const dayEntries = day ? entriesByDay.get(dateKey(day)) ?? [] : [];
+            const key = day ? dateKey(day) : null;
+            const dayEntries = key ? entriesByDay.get(key) ?? [] : [];
             const visible = dayEntries.slice(0, MAX_CHIPS_PER_DAY);
             const overflow = dayEntries.length - visible.length;
+            const isToday = key === todayKey;
 
             return (
               <div
                 key={`${wi}-${di}`}
-                className={`min-h-[6.5rem] border-b border-r border-gray-100 p-1.5 ${
-                  day ? "" : "bg-gray-50/50"
+                className={`min-h-[9rem] border-b border-r border-gray-100 p-2 transition-colors ${
+                  day ? "hover:bg-gray-50/70" : "bg-gray-50/40"
                 }`}
               >
                 {day && (
                   <>
-                    <p className="text-xs text-gray-400 mb-1">{day.getUTCDate()}</p>
+                    <p
+                      className={`mb-1.5 inline-flex h-6 w-6 items-center justify-center text-xs font-medium ${
+                        isToday
+                          ? "rounded-full bg-blue-600 text-white"
+                          : "text-gray-400"
+                      }`}
+                    >
+                      {day.getUTCDate()}
+                    </p>
                     <div className="space-y-1">
                       {visible.map((entry) => {
                         const { className } = categoryInfo(entry.category);
@@ -52,16 +63,16 @@ export function MonthGrid({ entries, month }: { entries: CalendarEntry[]; month:
                           <p
                             key={entry.id}
                             title={entry.title}
-                            className={`truncate rounded px-1.5 py-0.5 text-[11px] leading-tight ${className}${
+                            className={`line-clamp-2 rounded-md px-1.5 py-1 text-xs leading-snug font-medium ${className}${
                               entry.cancelled ? " opacity-60 line-through" : ""
-                            }${entry.highlight ? " ring-1 ring-offset-1 ring-current" : ""}`}
+                            }${entry.highlight ? " ring-1 ring-inset ring-current" : ""}`}
                           >
                             {entry.title}
                           </p>
                         );
                       })}
                       {overflow > 0 && (
-                        <p className="text-[11px] text-gray-400 px-1.5">+{overflow} more</p>
+                        <p className="px-1.5 text-xs font-medium text-gray-400">+{overflow} more</p>
                       )}
                     </div>
                   </>
