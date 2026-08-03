@@ -105,7 +105,7 @@ export default async function SessionsPage({ searchParams }: { searchParams: Sea
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                {["Session", "Title", "Date", "Status", ...(isAdmin ? ["Actions"] : [])].map((h) => (
+                {["Session", "Title", "Presenter", "Date", "Status", ...(isAdmin ? ["Actions"] : [])].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                     {h}
                   </th>
@@ -127,6 +127,7 @@ export default async function SessionsPage({ searchParams }: { searchParams: Sea
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-gray-600">{s.title ?? <span className="text-gray-400">—</span>}</td>
+                  <td className="px-4 py-3 text-gray-600">{s.presenter ?? <span className="text-gray-400">—</span>}</td>
                   <td className="px-4 py-3 text-gray-600">{formatDate(s.date)}</td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[s.status]}`}>
