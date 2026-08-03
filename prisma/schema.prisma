@@ -72,6 +72,17 @@ enum BaptismType {
   OTHER_UNVERIFIED
 }
 
+enum EventCategory {
+  RITE             // Acceptance, Welcoming, Election, Scrutiny I/II/III, Sending, Presentation of Creed
+  HOLY_WEEK        // Chrism Mass, Holy Thursday, Good Friday, Easter Vigil, Easter Sunday
+  HOLY_DAY         // Holy days of obligation
+  FEAST_DAY        // Feast days (non-obligation)
+  SPECIAL_SERVICE  // Special services of prayer/blessing
+  SUNDAY_MASS      // Routine recurring Sunday Mass + catechumen dismissal notes
+  TEAM_EVENT       // Team Organizational Meeting, Team Evaluation, Painted Churches Pilgrimage
+  OTHER
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 // Staff login accounts — linked to Supabase Auth via supabaseUserId
@@ -97,6 +108,7 @@ model Cycle {
   createdAt              DateTime      @default(now())
   sessions               Session[]
   participants           Participant[]
+  calendarEvents         CalendarEvent[]
 }
 
 model Participant {
@@ -192,6 +204,29 @@ model Session {
   attendanceRecords AttendanceRecord[]
 
   @@unique([cycleId, type, number])
+}
+
+// Non-session calendar entries — rites, holy days, feast days, special
+// services, retreats-adjacent parish/team events. Decoupled from Session on
+// purpose: these carry no attendance concept. The public /calendar view
+// merges these with WEEKLY/REFLECTION Session rows at read time via
+// lib/calendar.ts.
+model CalendarEvent {
+  id          String        @id @default(cuid())
+  cycleId     String
+  cycle       Cycle         @relation(fields: [cycleId], references: [id])
+  title       String
+  description String?
+  category    EventCategory @default(SUNDAY_MASS)
+  date        DateTime                    // UTC-midnight calendar date, same convention as Session.date
+  time        String?                     // free-text display only ("4:00 PM") — never used for sorting/logic
+  location    String?
+  highlight   Boolean       @default(false)
+  sortOrder   Int           @default(0)   // manual same-day tie-break; 0 is a no-op for the common case
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([cycleId, date])
 }
 
 model AttendanceRecord {

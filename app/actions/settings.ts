@@ -185,3 +185,80 @@ export async function setCurrentCycle(cycleId: string): Promise<void> {
   revalidatePath("/settings");
   revalidatePath("/dashboard");
 }
+
+// ── Calendar Events ───────────────────────────────────────────────────────────
+
+export async function createCalendarEvent(
+  _state: SettingsFormState,
+  formData: FormData
+): Promise<SettingsFormState> {
+  const me = await requireAuth();
+  if (me.role !== "ADMIN") return { error: "Admin access required." };
+
+  const cycleId     = str(formData, "cycleId");
+  const title       = str(formData, "title");
+  const category    = str(formData, "category") as
+    | "RITE" | "HOLY_WEEK" | "HOLY_DAY" | "FEAST_DAY" | "SPECIAL_SERVICE" | "SUNDAY_MASS" | "TEAM_EVENT" | "OTHER"
+    | null;
+  const dateRaw     = str(formData, "date");
+  const time        = str(formData, "time");
+  const location    = str(formData, "location");
+  const description = str(formData, "description");
+  const highlight   = formData.get("highlight") === "on";
+  const sortOrder   = parseInt(str(formData, "sortOrder") ?? "0") || 0;
+
+  if (!cycleId || !title || !category || !dateRaw) {
+    return { error: "Title, category, and date are required." };
+  }
+
+  await prisma.calendarEvent.create({
+    data: { cycleId, title, category, date: new Date(dateRaw), time, location, description, highlight, sortOrder },
+  });
+
+  revalidatePath("/settings");
+  revalidatePath("/calendar");
+  redirect("/settings?tab=calendar");
+}
+
+export async function updateCalendarEvent(
+  eventId: string,
+  _state: SettingsFormState,
+  formData: FormData
+): Promise<SettingsFormState> {
+  const me = await requireAuth();
+  if (me.role !== "ADMIN") return { error: "Admin access required." };
+
+  const title       = str(formData, "title");
+  const category    = str(formData, "category") as
+    | "RITE" | "HOLY_WEEK" | "HOLY_DAY" | "FEAST_DAY" | "SPECIAL_SERVICE" | "SUNDAY_MASS" | "TEAM_EVENT" | "OTHER"
+    | null;
+  const dateRaw     = str(formData, "date");
+  const time        = str(formData, "time");
+  const location    = str(formData, "location");
+  const description = str(formData, "description");
+  const highlight   = formData.get("highlight") === "on";
+  const sortOrder   = parseInt(str(formData, "sortOrder") ?? "0") || 0;
+
+  if (!title || !category || !dateRaw) {
+    return { error: "Title, category, and date are required." };
+  }
+
+  await prisma.calendarEvent.update({
+    where: { id: eventId },
+    data: { title, category, date: new Date(dateRaw), time, location, description, highlight, sortOrder },
+  });
+
+  revalidatePath("/settings");
+  revalidatePath("/calendar");
+  redirect("/settings?tab=calendar");
+}
+
+export async function deleteCalendarEvent(eventId: string): Promise<void> {
+  const me = await requireAuth();
+  if (me.role !== "ADMIN") return;
+
+  await prisma.calendarEvent.delete({ where: { id: eventId } });
+
+  revalidatePath("/settings");
+  revalidatePath("/calendar");
+}

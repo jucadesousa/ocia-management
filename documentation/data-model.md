@@ -61,6 +61,28 @@ Visual representation of the system's core entities and their relationships.
 └────────────┘
 ```
 
+`CALENDAR EVENT` is a separate entity off `CYCLE`, shown on its own below since it isn't part of the attendance chain:
+
+```
+                          ┌───────────────────────┐
+                          │         CYCLE         │
+                          └──────────┬────────────┘
+                                     │ 1
+                                     │ N
+                          ┌──────────▼────────────┐
+                          │    CALENDAR EVENT     │
+                          ├───────────────────────┤
+                          │ id                    │
+                          │ title / description   │
+                          │ category              │
+                          │ date / time           │
+                          │ location              │
+                          │ highlight / sortOrder │
+                          └───────────────────────┘
+```
+
+Not shown as an edge above: the public `/calendar` view merges `CalendarEvent` rows with `Session` (`WEEKLY`/`REFLECTION`) rows at read time — see `### CalendarEvent` below.
+
 ---
 
 ## OCIA Stages (Participant lifecycle)
@@ -80,6 +102,7 @@ Visual representation of the system's core entities and their relationships.
 |---|---|---|
 | Cycle → Participants | 1 : N | All participants belong to one cycle |
 | Cycle → Sessions | 1 : N | All sessions belong to one cycle |
+| Cycle → CalendarEvents | 1 : N | All calendar events belong to one cycle |
 | Participant → AttendanceRecord | 1 : N | One record per session attended |
 | Session → AttendanceRecord | 1 : N | One record per participant |
 | Participant ↔ AttendanceRecord ↔ Session | M : N | Junction table linking participants to sessions |
@@ -137,6 +160,27 @@ A single meeting within a cycle. Can be a regular weekly session or a reflection
 | status | Enum | `PLANNED`, `COMPLETED`, or `CANCELLED` |
 
 Unique constraint: `(cycleId, type, number)` — no duplicate session numbers per type per cycle.
+
+---
+
+### CalendarEvent
+
+Non-session calendar entries — rites, holy days, feast days, special services, routine Sunday Mass/dismissal notes, and other parish/team events. Backs the public `/calendar` page and its admin editor at Settings → Calendar.
+
+| Field | Type | Notes |
+|---|---|---|
+| id | String | CUID primary key |
+| cycleId | String | Foreign key → Cycle |
+| title | String | e.g. "Rite of Welcoming" |
+| description | String? | Optional longer note |
+| category | Enum | See `EventCategory` below |
+| date | DateTime | Calendar date, UTC-midnight (same convention as Session.date) |
+| time | String? | Free-text display only (e.g. "5:00 PM") — never used for sorting |
+| location | String? | e.g. "Parish Hall" |
+| highlight | Boolean | Marks a milestone entry for visual emphasis |
+| sortOrder | Int | Manual tie-break for same-day entries; default 0 |
+
+> `CalendarEvent` is intentionally decoupled from `Session` — it carries no attendance or status concept. The public `/calendar` view merges `CalendarEvent` rows with `WEEKLY`/`REFLECTION` `Session` rows at read time via `lib/calendar.ts`. Retreat mornings are represented only as `Session{type: REFLECTION}` and are not duplicated here.
 
 ---
 
@@ -214,3 +258,4 @@ For each Participant:
 | Group | `ENGLISH`, `SPANISH` |
 | DocumentType | `BAPTISM_CERT`, `MARRIAGE_DOC`, `OTHER` |
 | BaptismProofStatus | `NONE`, `CERTIFICATE`, `LETTER`, `OTHER` |
+| EventCategory | `RITE`, `HOLY_WEEK`, `HOLY_DAY`, `FEAST_DAY`, `SPECIAL_SERVICE`, `SUNDAY_MASS`, `TEAM_EVENT`, `OTHER` |

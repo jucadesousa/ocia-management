@@ -7,6 +7,7 @@ import {
   Users,
   BadgeCheck,
   CalendarDays,
+  CalendarRange,
   ClipboardList,
   BarChart2,
   Settings,
@@ -24,6 +25,7 @@ const adminLinks = [
   { href: "/participants",        label: "Participants",  icon: Users },
   { href: "/participants/badges", label: "Badges",        icon: BadgeCheck },
   { href: "/sessions",            label: "Sessions",      icon: CalendarDays },
+  { href: "/calendar",            label: "Calendar",      icon: CalendarRange },
   { href: "/attendance",          label: "Attendance",    icon: ClipboardList },
   { href: "/reports",             label: "Reports",       icon: BarChart2 },
   { href: "/settings",            label: "Settings",      icon: Settings },
@@ -32,6 +34,7 @@ const adminLinks = [
 
 const volunteerLinks = [
   { href: "/dashboard",  label: "Dashboard",     icon: LayoutDashboard },
+  { href: "/calendar",   label: "Calendar",      icon: CalendarRange },
   { href: "/attendance", label: "Attendance",    icon: ClipboardList },
   { href: "/reports",    label: "Reports",       icon: BarChart2 },
   { href: "/docs",       label: "Documentation", icon: BookOpen },

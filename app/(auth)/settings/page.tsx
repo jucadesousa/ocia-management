@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { UsersTab } from "./_components/users-tab";
 import { CyclesTab } from "./_components/cycles-tab";
+import { CalendarEventsTab } from "./_components/calendar-events-tab";
 
 type SearchParams = Promise<{ tab?: string; edit?: string }>;
 
@@ -16,16 +17,25 @@ export default async function SettingsPage({
   if (me.role !== "ADMIN") notFound();
 
   const params = await searchParams;
-  const tab = params.tab === "cycles" ? "cycles" : "users";
+  const tab = params.tab === "cycles" ? "cycles" : params.tab === "calendar" ? "calendar" : "users";
 
-  const [users, cycles] = await Promise.all([
+  const [users, cycles, currentCycle] = await Promise.all([
     prisma.user.findMany({ orderBy: { name: "asc" } }),
     prisma.cycle.findMany({ orderBy: { year: "desc" } }),
+    prisma.cycle.findFirst({ where: { isCurrent: true } }),
   ]);
 
+  const calendarEvents = currentCycle
+    ? await prisma.calendarEvent.findMany({
+        where: { cycleId: currentCycle.id },
+        orderBy: [{ date: "asc" }, { sortOrder: "asc" }],
+      })
+    : [];
+
   const tabs = [
-    { key: "users",  label: "Staff Accounts" },
-    { key: "cycles", label: "Cycles" },
+    { key: "users",    label: "Staff Accounts" },
+    { key: "cycles",   label: "Cycles" },
+    { key: "calendar", label: "Calendar" },
   ];
 
   return (
@@ -53,6 +63,13 @@ export default async function SettingsPage({
 
       {tab === "users"  && <UsersTab  users={users}  currentUserId={me.id} />}
       {tab === "cycles" && <CyclesTab cycles={cycles} editId={params.edit} />}
+      {tab === "calendar" && (
+        currentCycle ? (
+          <CalendarEventsTab cycleId={currentCycle.id} events={calendarEvents} editId={params.edit} />
+        ) : (
+          <p className="text-sm text-gray-500 py-6">No active cycle found. Set a current cycle first.</p>
+        )
+      )}
     </div>
   );
 }
