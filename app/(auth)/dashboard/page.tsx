@@ -129,7 +129,7 @@ export default async function DashboardPage() {
               {upcomingSession.date && (
                 <p className="text-sm text-gray-500 mt-0.5">
                   {new Date(upcomingSession.date).toLocaleDateString("en-US", {
-                    weekday: "long", month: "long", day: "numeric",
+                    weekday: "long", month: "long", day: "numeric", year: "numeric",
                   })}
                 </p>
               )}
