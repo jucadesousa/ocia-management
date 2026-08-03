@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/dal";
-import { BarChart2, ClipboardList, Phone, Layers } from "lucide-react";
+import { BarChart2, ClipboardList, Phone, Layers, CalendarDays } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export default async function ReportsPage() {
@@ -22,6 +22,14 @@ export default async function ReportsPage() {
         "Printable participant roster for a session. Includes a blank volunteer attendance sheet.",
       badge: "Printable",
       icon: ClipboardList,
+    },
+    {
+      href: "/reports/sessions",
+      title: "Session Schedule",
+      description:
+        "Full list of sessions for the cycle with their dates, presenters, and status.",
+      badge: "All sessions",
+      icon: CalendarDays,
     },
     {
       href: "/reports/contacts",
