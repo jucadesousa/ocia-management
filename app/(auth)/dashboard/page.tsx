@@ -36,9 +36,12 @@ export default async function DashboardPage() {
 
   const threshold = cycle?.atRiskThresholdPercent ?? 75;
 
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+
   const upcomingSession = cycle
     ? await prisma.session.findFirst({
-        where: { cycleId: cycle.id, status: "PLANNED", date: { gte: new Date() } },
+        where: { cycleId: cycle.id, status: "PLANNED", date: { gte: startOfToday } },
         orderBy: { date: "asc" },
       })
     : null;
