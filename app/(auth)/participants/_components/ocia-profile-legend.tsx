@@ -8,6 +8,9 @@ const LEGEND = [
   { label: "Candidate",                     color: "bg-blue-100 text-blue-700",      desc: "Baptized in another Christian denomination with a confirmed valid trinitarian baptism — seeking full communion." },
   { label: "Candidate for Sacraments",      color: "bg-orange-100 text-orange-700",  desc: "Baptized Catholic but has not yet received First Communion." },
   { label: "Catholic Candidate",            color: "bg-teal-100 text-teal-700",      desc: "Baptized Catholic with First Communion — still needs Confirmation." },
+  { label: "Elect",                         color: "bg-indigo-100 text-indigo-700",  desc: "Has celebrated the Rite of Election, marked by an Election date on the Sacramental tab." },
+  { label: "Mystagogy",                     color: "bg-pink-100 text-pink-700",      desc: "Has celebrated the Easter Vigil, marked by an Easter Vigil date on the Sacramental tab." },
+  { label: "Completed",                     color: "bg-emerald-100 text-emerald-700", desc: "Marked complete on the Sacramental tab." },
   { label: "Fully Initiated",               color: "bg-green-100 text-green-700",    desc: "Has received all three sacraments: Baptism, Eucharist, and Confirmation." },
   { label: "Unknown",                       color: "bg-gray-100 text-gray-500",      desc: "No sacramental record has been filled in yet." },
 ];

@@ -3,28 +3,25 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { ExcelExportButton } from "../_components/excel-export-button";
 import { Breadcrumb } from "@/components/breadcrumb";
-import type { OciaStage, ParticipantStatus } from "@prisma/client";
+import { deriveOciaLabel, OCIA_LABELS, OCIA_LABEL_ORDER } from "@/lib/ocia-stage";
+import { OciaProfileLegend } from "@/app/(auth)/participants/_components/ocia-profile-legend";
 
-const stageLabel: Record<OciaStage, string> = {
-  INQUIRY: "Inquiry",
-  CATECHUMEN: "Catechumen",
-  CANDIDATE: "Candidate",
-  ELECT: "Elect",
-  MYSTAGOGY: "Mystagogy",
-  COMPLETED: "Completed",
-};
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2)
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return (name[0] ?? "?").toUpperCase();
+}
 
-const STAGE_ORDER: OciaStage[] = [
-  "INQUIRY",
-  "CATECHUMEN",
-  "CANDIDATE",
-  "ELECT",
-  "MYSTAGOGY",
-  "COMPLETED",
-];
+type SearchParams = Promise<{ missingGroup?: string }>;
 
-export default async function MinistryOverviewPage() {
+export default async function MinistryOverviewPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
   await requireAuth();
+  const params = await searchParams;
 
   const cycle = await prisma.cycle.findFirst({ where: { isCurrent: true } });
 
@@ -41,10 +38,14 @@ export default async function MinistryOverviewPage() {
     include: {
       sacramentalRecord: {
         select: {
+          baptismType: true,
           isBaptized: true,
           hasFirstCommunion: true,
           hasConfirmation: true,
           baptismProofStatus: true,
+          electionDate: true,
+          easterVigilDate: true,
+          completedAt: true,
         },
       },
     },
@@ -57,17 +58,12 @@ export default async function MinistryOverviewPage() {
   const inactiveCount = participants.filter((p) => p.status === "INACTIVE").length;
   const withdrawnCount = participants.filter((p) => p.status === "WITHDRAWN").length;
 
-  const stageCounts: Record<OciaStage, number> = {
-    INQUIRY: 0,
-    CATECHUMEN: 0,
-    CANDIDATE: 0,
-    ELECT: 0,
-    MYSTAGOGY: 0,
-    COMPLETED: 0,
-  };
+  const stageCounts: Record<string, number> = {};
+  for (const key of OCIA_LABEL_ORDER) stageCounts[key] = 0;
 
   for (const p of activeParticipants) {
-    stageCounts[p.ociaStage] = (stageCounts[p.ociaStage] ?? 0) + 1;
+    const key = deriveOciaLabel(p.sacramentalRecord).key;
+    stageCounts[key] = (stageCounts[key] ?? 0) + 1;
   }
 
   const maxStageCount = Math.max(...Object.values(stageCounts), 1);
@@ -77,8 +73,11 @@ export default async function MinistryOverviewPage() {
   type MissingRow = {
     id: string;
     fullName: string;
+    photoUrl: string | null;
+    phone: string | null;
+    email: string | null;
     group: string;
-    stage: OciaStage;
+    stage: string;
     missing: string;
   };
 
@@ -90,27 +89,53 @@ export default async function MinistryOverviewPage() {
       missingRows.push({
         id: p.id,
         fullName: p.fullName,
+        photoUrl: p.photoUrl,
+        phone: p.phone,
+        email: p.email,
         group: p.group === "ENGLISH" ? "English" : "Spanish",
-        stage: p.ociaStage,
+        stage: deriveOciaLabel(null).label,
         missing: "No sacramental record",
       });
     } else if (rec.isBaptized === true && rec.baptismProofStatus === "NONE") {
       missingRows.push({
         id: p.id,
         fullName: p.fullName,
+        photoUrl: p.photoUrl,
+        phone: p.phone,
+        email: p.email,
         group: p.group === "ENGLISH" ? "English" : "Spanish",
-        stage: p.ociaStage,
+        stage: deriveOciaLabel(rec).label,
         missing: "Baptism proof",
       });
     }
   }
 
-  const missingExportData = missingRows.map((r) => ({
+  const missingGroupFilter =
+    params.missingGroup === "ENGLISH" || params.missingGroup === "SPANISH"
+      ? params.missingGroup === "ENGLISH" ? "English" : "Spanish"
+      : "";
+
+  const filteredMissingRows = missingGroupFilter
+    ? missingRows.filter((r) => r.group === missingGroupFilter)
+    : missingRows;
+
+  const missingExportData = filteredMissingRows.map((r) => ({
     Name: r.fullName,
     Group: r.group,
-    Stage: stageLabel[r.stage],
+    Stage: r.stage,
     Missing: r.missing,
+    Phone: r.phone ?? "",
+    Email: r.email ?? "",
   }));
+
+  function missingGroupTabClass(value: string) {
+    const isActive = value === missingGroupFilter;
+    return `text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
+      isActive
+        ? "bg-blue-600 text-white"
+        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+    }`;
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -129,8 +154,9 @@ export default async function MinistryOverviewPage() {
       <section>
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-gray-900 inline-flex items-center gap-0.5">
               Stage Distribution
+              <OciaProfileLegend />
             </h2>
             <p className="text-sm text-gray-500">
               {activeParticipants.length} active participant
@@ -141,26 +167,28 @@ export default async function MinistryOverviewPage() {
           </div>
 
           <div className="p-5 space-y-3">
-            {STAGE_ORDER.map((stage) => {
-              const count = stageCounts[stage] ?? 0;
+            {OCIA_LABEL_ORDER.map((key) => {
+              const count = stageCounts[key] ?? 0;
               const widthPct =
                 maxStageCount > 0
                   ? Math.round((count / maxStageCount) * 100)
                   : 0;
               return (
-                <div key={stage} className="flex items-center gap-3">
-                  <span className="text-sm text-gray-700 w-28 shrink-0">
-                    {stageLabel[stage]}
+                <div key={key} className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                  <span className="text-sm text-gray-700 sm:w-44 sm:shrink-0 sm:truncate" title={OCIA_LABELS[key].label}>
+                    {OCIA_LABELS[key].label}
                   </span>
-                  <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
-                    <div
-                      className="bg-blue-500 h-4 rounded-full transition-all"
-                      style={{ width: `${widthPct}%` }}
-                    />
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex-1 bg-gray-100 rounded-full h-4 overflow-hidden">
+                      <div
+                        className="bg-blue-500 h-4 rounded-full transition-all"
+                        style={{ width: `${widthPct}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700 w-6 text-right shrink-0">
+                      {count}
+                    </span>
                   </div>
-                  <span className="text-sm font-semibold text-gray-700 w-6 text-right shrink-0">
-                    {count}
-                  </span>
                 </div>
               );
             })}
@@ -192,10 +220,13 @@ export default async function MinistryOverviewPage() {
       {/* ─── Section 2: Missing Documents ──────────────────────────────────── */}
       <section>
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                Missing Documents
+                Missing Documents{" "}
+                <span className="text-sm font-normal text-gray-400">
+                  ({filteredMissingRows.length})
+                </span>
               </h2>
               <p className="text-sm text-gray-500">
                 Active participants missing a sacramental record or baptism
@@ -214,21 +245,52 @@ export default async function MinistryOverviewPage() {
             )}
           </div>
 
-          {missingRows.length === 0 ? (
+          {missingRows.length > 0 && (
+            <div className="no-print px-5 py-2 border-b border-gray-100 flex items-center gap-2">
+              <Link href="/reports/ministry" className={missingGroupTabClass("")}>
+                All
+              </Link>
+              <Link href="/reports/ministry?missingGroup=ENGLISH" className={missingGroupTabClass("English")}>
+                English
+              </Link>
+              <Link href="/reports/ministry?missingGroup=SPANISH" className={missingGroupTabClass("Spanish")}>
+                Spanish
+              </Link>
+            </div>
+          )}
+
+          {filteredMissingRows.length === 0 ? (
             <div className="p-8 text-center text-gray-400 text-sm">
-              All active participants have complete sacramental records.
+              {missingRows.length === 0
+                ? "All active participants have complete sacramental records."
+                : "No missing documents for this group."}
             </div>
           ) : (
             <>
               {/* Mobile cards */}
               <ul className="md:hidden divide-y divide-gray-100">
-                {missingRows.map((r) => (
+                {filteredMissingRows.map((r) => (
                   <li key={r.id} className="px-4 py-3 flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{r.fullName}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {r.group} · {stageLabel[r.stage]}
-                      </p>
+                    <div className="flex items-center gap-3 min-w-0">
+                      {r.photoUrl ? (
+                        <img
+                          src={r.photoUrl}
+                          alt={r.fullName}
+                          className="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-700 shrink-0 select-none">
+                          {initials(r.fullName)}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <Link href={`/participants/${r.id}`} className="text-sm font-medium text-gray-900 hover:text-blue-600 truncate block">
+                          {r.fullName}
+                        </Link>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {r.group} · {r.stage}
+                        </p>
+                      </div>
                     </div>
                     <span className={`shrink-0 inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                       r.missing === "No sacramental record"
@@ -245,19 +307,43 @@ export default async function MinistryOverviewPage() {
               <table className="hidden md:table w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    {["Name", "Group", "Stage", "Missing"].map((h) => (
+                    {["Name", "Group"].map((h) => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         {h}
                       </th>
                     ))}
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-0.5">
+                        Stage
+                        <OciaProfileLegend />
+                      </span>
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Missing
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {missingRows.map((r) => (
+                  {filteredMissingRows.map((r) => (
                     <tr key={r.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-gray-900">{r.fullName}</td>
+                      <td className="px-4 py-3 font-medium text-gray-900">
+                        <Link href={`/participants/${r.id}`} className="flex items-center gap-3 group w-fit hover:text-blue-600">
+                          {r.photoUrl ? (
+                            <img
+                              src={r.photoUrl}
+                              alt={r.fullName}
+                              className="w-8 h-8 rounded-full object-cover border border-gray-200 shrink-0"
+                            />
+                          ) : (
+                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700 shrink-0 select-none">
+                              {initials(r.fullName)}
+                            </div>
+                          )}
+                          {r.fullName}
+                        </Link>
+                      </td>
                       <td className="px-4 py-3 text-gray-600">{r.group}</td>
-                      <td className="px-4 py-3 text-gray-600">{stageLabel[r.stage]}</td>
+                      <td className="px-4 py-3 text-gray-600">{r.stage}</td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                           r.missing === "No sacramental record"
