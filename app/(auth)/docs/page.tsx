@@ -231,6 +231,33 @@ function CalendarTab({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
+function TeamTab() {
+  return (
+    <div className="space-y-6">
+      <Section title="What it is">
+        <P>
+          A public "meet the team" page listing OCIA staff (Admins and Volunteers) who've chosen to share a photo and short bio. It's meant to put a face and a few words to the people participants interact with each week.
+        </P>
+      </Section>
+
+      <Section title="Editing your own profile">
+        <P>
+          Go to <strong>My Profile</strong> at the bottom of the sidebar (next to Change Password). Upload a photo, write a short paragraph about yourself, and check <strong>Publish my profile to the public Team page</strong> when you're ready for it to go live.
+        </P>
+        <Note>
+          Filling in your photo and bio does <strong>not</strong> make them public by itself — the publish checkbox is a separate, explicit step. Unchecking it hides your profile again without losing what you've written.
+        </Note>
+      </Section>
+
+      <Section title="Where to find it">
+        <P>
+          Click <strong>Team</strong> in the sidebar to see the public grid of published profiles, or click a photo/name to see that person's full bio. The same page works for logged-out visitors — this is the link to share publicly.
+        </P>
+      </Section>
+    </div>
+  );
+}
+
 function AttendanceTab() {
   return (
     <div className="space-y-6">
@@ -436,6 +463,7 @@ export default async function DocsPage({ searchParams }: Props) {
   const tabs = [
     { key: "overview",   label: "Overview" },
     { key: "calendar",   label: "Calendar" },
+    { key: "team",       label: "Team" },
     { key: "attendance", label: "Attendance" },
     { key: "reports",    label: "Reports" },
     ...(isAdmin ? [
@@ -478,6 +506,7 @@ export default async function DocsPage({ searchParams }: Props) {
       <div className="bg-white rounded-xl border border-gray-200 p-5 sm:p-6">
         {activeTab === "overview"     && <OverviewTab />}
         {activeTab === "calendar"     && <CalendarTab isAdmin={isAdmin} />}
+        {activeTab === "team"         && <TeamTab />}
         {activeTab === "attendance"   && <AttendanceTab />}
         {activeTab === "reports"      && <ReportsTab />}
         {isAdmin && activeTab === "participants" && <ParticipantsTab />}

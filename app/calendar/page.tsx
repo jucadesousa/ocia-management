@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/dal";
 import { getCalendarEntries, currentMonthKey, monthKeyOf } from "@/lib/calendar";
-import { Nav } from "@/components/nav";
+import { PublicPageShell } from "@/components/public-page-shell";
 import { MonthNav } from "@/components/calendar/month-nav";
 import { MonthGrid } from "@/components/calendar/month-grid";
 import { AgendaList } from "@/components/calendar/agenda-list";
@@ -19,25 +19,6 @@ const printStyle = (
   `}</style>
 );
 
-// Wraps the page content in the same sidebar shell as app/(auth)/layout.tsx
-// when a session is present, so logged-in staff keep their nav instead of
-// landing on the bare public page. Anonymous participants still see the
-// bare page — this route stays public, it just upgrades its own chrome.
-function withNavIfLoggedIn(
-  user: { role: "ADMIN" | "VOLUNTEER"; name: string } | null,
-  content: React.ReactNode
-) {
-  if (!user) {
-    return <div className="min-h-screen bg-gray-50">{content}</div>;
-  }
-  return (
-    <div className="flex h-screen overflow-hidden">
-      <Nav role={user.role} name={user.name} />
-      <main className="flex-1 overflow-y-auto bg-gray-50 pt-14 md:pt-0">{content}</main>
-    </div>
-  );
-}
-
 export default async function CalendarPage({ searchParams }: { searchParams: SearchParams }) {
   const [user, params, cycle] = await Promise.all([
     getCurrentUser(),
@@ -46,7 +27,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Sea
   ]);
 
   if (!cycle) {
-    return withNavIfLoggedIn(
+    return PublicPageShell(
       user,
       <div className="flex items-center justify-center p-6 min-h-[60vh]">
         <p className="text-gray-500 text-sm">Calendar not available right now. Please check back later.</p>
@@ -58,7 +39,7 @@ export default async function CalendarPage({ searchParams }: { searchParams: Sea
   const month = params.month ?? currentMonthKey();
   const monthEntries = allEntries.filter((e) => monthKeyOf(e.date) === month);
 
-  return withNavIfLoggedIn(
+  return PublicPageShell(
     user,
     <>
       {printStyle}

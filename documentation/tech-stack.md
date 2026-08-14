@@ -136,7 +136,11 @@ Supabase Auth handles login, logout, and session management. When a user logs in
 - [lib/supabase/admin.ts](../lib/supabase/admin.ts) — a special admin client that uses the service role key. Used for privileged operations like uploading files to Storage. Never exposed to the browser.
 
 #### 3. Storage
-Supabase Storage holds participant photos and uploaded documents (baptism certificates, marriage documents, etc.). Files are stored in a private bucket and referenced by URL in the database.
+Supabase Storage holds participant photos, staff photos, and uploaded documents (baptism certificates, marriage documents, etc.). Two relevant buckets:
+- `participant-photos` — participant photos.
+- `staff-photos` — staff profile photos for the public Team page (public bucket, since these are meant to be viewed without login).
+
+Files are referenced by URL in the database.
 
 **Key environment variables:**
 | Variable | Purpose |

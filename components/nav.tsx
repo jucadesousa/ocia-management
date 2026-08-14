@@ -5,6 +5,7 @@ import Image from "next/image";
 import {
   LayoutDashboard,
   Users,
+  Users2,
   BadgeCheck,
   CalendarDays,
   CalendarRange,
@@ -14,6 +15,7 @@ import {
   BookOpen,
   LogOut,
   KeyRound,
+  UserCircle,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
@@ -26,6 +28,7 @@ const adminLinks = [
   { href: "/participants/badges", label: "Badges",        icon: BadgeCheck },
   { href: "/sessions",            label: "Sessions",      icon: CalendarDays },
   { href: "/calendar",            label: "Calendar",      icon: CalendarRange },
+  { href: "/team",                label: "Team",          icon: Users2 },
   { href: "/attendance",          label: "Attendance",    icon: ClipboardList },
   { href: "/reports",             label: "Reports",       icon: BarChart2 },
   { href: "/settings",            label: "Settings",      icon: Settings },
@@ -35,6 +38,7 @@ const adminLinks = [
 const volunteerLinks = [
   { href: "/dashboard",  label: "Dashboard",     icon: LayoutDashboard },
   { href: "/calendar",   label: "Calendar",      icon: CalendarRange },
+  { href: "/team",       label: "Team",          icon: Users2 },
   { href: "/attendance", label: "Attendance",    icon: ClipboardList },
   { href: "/reports",    label: "Reports",       icon: BarChart2 },
   { href: "/docs",       label: "Documentation", icon: BookOpen },
@@ -104,6 +108,17 @@ export function Nav({ role, name }: { role: Role; name: string }) {
       </ul>
 
       <div className="px-2 pb-4 space-y-0.5">
+        <Link
+          href="/account/profile"
+          className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors border-l-2 ${
+            pathname === "/account/profile"
+              ? "bg-lumen/20 text-lumen font-medium border-lumen"
+              : "text-gray-400 hover:bg-gray-700 hover:text-white border-transparent"
+          }`}
+        >
+          <UserCircle size={16} className="shrink-0" />
+          My Profile
+        </Link>
         <Link
           href="/account/password"
           className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors border-l-2 ${

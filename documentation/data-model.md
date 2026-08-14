@@ -138,6 +138,25 @@ A matching `ociaProfileWhere()` helper (same file) translates any of these categ
 
 ## Entity Reference
 
+### User
+
+A staff login account (ADMIN or VOLUNTEER) — separate from `Participant` and not scoped to a cycle. Linked to Supabase Auth via `supabaseUserId`.
+
+| Field | Type | Notes |
+|---|---|---|
+| id | String | CUID primary key |
+| supabaseUserId | String | Foreign key → Supabase Auth user |
+| email | String | Unique login email |
+| name | String | Display name |
+| role | Enum | `ADMIN` or `VOLUNTEER` |
+| bio | String? | Short self-written summary shown on the public Team page |
+| photoUrl | String? | Supabase Storage public URL (`staff-photos` bucket) |
+| isPublished | Boolean | Default: false — must be explicitly turned on for the profile to appear on `/team` |
+
+> Staff edit their own `bio`/`photoUrl`/`isPublished` at **Account → My Profile**; the public `/team` and `/team/[id]` pages only ever show `isPublished: true` users.
+
+---
+
 ### Cycle
 
 The top-level container for a single OCIA year. Everything — participants and sessions — is scoped to a cycle. Only one cycle is marked `isCurrent` at a time.
