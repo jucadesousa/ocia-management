@@ -1,4 +1,4 @@
-import type { BaptismType } from "@prisma/client";
+import type { BaptismType, Prisma } from "@prisma/client";
 
 type SacramentalSnapshot = {
   baptismType: BaptismType | null;
@@ -58,6 +58,57 @@ export function deriveOciaLabel(s: SacramentalSnapshot | null | undefined): Ocia
   if (!s.hasFirstCommunion) return OCIA_LABELS.candidate_for_sacraments;
   if (!s.hasConfirmation) return OCIA_LABELS.candidate_for_confirmation;
   return OCIA_LABELS.fully_initiated;
+}
+
+// Mirrors deriveOciaLabel()'s priority order as a Prisma filter, so list/report
+// filtering by OCIA Profile stays in sync with how the label is computed for display.
+export function ociaProfileWhere(key: string): Prisma.ParticipantWhereInput {
+  const noMilestones = { completedAt: null, easterVigilDate: null, electionDate: null };
+
+  switch (key) {
+    case "completed":
+      return { sacramentalRecord: { completedAt: { not: null } } };
+    case "mystagogy":
+      return { sacramentalRecord: { completedAt: null, easterVigilDate: { not: null } } };
+    case "elect":
+      return { sacramentalRecord: { completedAt: null, easterVigilDate: null, electionDate: { not: null } } };
+    case "catechumen":
+      return { sacramentalRecord: { ...noMilestones, baptismType: "NONE" } };
+    case "candidate_unverified":
+      return { sacramentalRecord: { ...noMilestones, baptismType: "OTHER_UNVERIFIED" } };
+    case "candidate":
+      return { sacramentalRecord: { ...noMilestones, baptismType: "OTHER_VALID" } };
+    case "candidate_for_sacraments":
+      return {
+        sacramentalRecord: {
+          ...noMilestones,
+          baptismType: "CATHOLIC",
+          OR: [{ hasFirstCommunion: false }, { hasFirstCommunion: null }],
+        },
+      };
+    case "candidate_for_confirmation":
+      return {
+        sacramentalRecord: {
+          ...noMilestones,
+          baptismType: "CATHOLIC",
+          hasFirstCommunion: true,
+          OR: [{ hasConfirmation: false }, { hasConfirmation: null }],
+        },
+      };
+    case "fully_initiated":
+      return {
+        sacramentalRecord: {
+          ...noMilestones,
+          baptismType: "CATHOLIC",
+          hasFirstCommunion: true,
+          hasConfirmation: true,
+        },
+      };
+    case "unknown":
+      return { sacramentalRecord: null };
+    default:
+      return {};
+  }
 }
 
 // Human-readable labels for the BaptismType enum (used in forms/display)

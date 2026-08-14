@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
-import { deriveOciaLabel } from "@/lib/ocia-stage";
+import { deriveOciaLabel, ociaProfileWhere } from "@/lib/ocia-stage";
 import { ParticipantFilters } from "./_components/filters";
 import { OciaProfileLegend } from "./_components/ocia-profile-legend";
 import type { Group, OciaStage, ParticipantStatus } from "@prisma/client";
@@ -66,7 +66,7 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
   const where = {
     cycleId: cycle.id,
     ...(params.group && { group: params.group as Group }),
-    ...(params.stage && { ociaStage: params.stage as OciaStage }),
+    ...(params.stage && ociaProfileWhere(params.stage)),
     ...(params.status && { status: params.status as ParticipantStatus }),
     ...(search && {
       OR: [
@@ -89,7 +89,14 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
           select: { id: true },
         },
         sacramentalRecord: {
-          select: { baptismType: true, hasFirstCommunion: true, hasConfirmation: true },
+          select: {
+            baptismType: true,
+            hasFirstCommunion: true,
+            hasConfirmation: true,
+            electionDate: true,
+            easterVigilDate: true,
+            completedAt: true,
+          },
         },
       },
       orderBy: { fullName: "asc" },

@@ -5,7 +5,9 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { RosterControls } from "./_components/roster-controls";
 import { PrintButton } from "../_components/print-button";
-import type { SessionType, SessionStatus, OciaStage } from "@prisma/client";
+import type { SessionType, SessionStatus } from "@prisma/client";
+import { deriveOciaLabel } from "@/lib/ocia-stage";
+import { OciaProfileLegend } from "@/app/(auth)/participants/_components/ocia-profile-legend";
 
 function formatDate(date: Date | null): string {
   if (!date) return "______";
@@ -20,15 +22,6 @@ function makeSessionLabel(type: SessionType, number: number, date: Date | null):
   const prefix = type === "WEEKLY" ? `Session ${number}` : `Reflection ${number}`;
   return `${prefix} — ${formatDate(date)}`;
 }
-
-const stageLabel: Record<OciaStage, string> = {
-  INQUIRY: "Inquiry",
-  CATECHUMEN: "Catechumen",
-  CANDIDATE: "Candidate",
-  ELECT: "Elect",
-  MYSTAGOGY: "Mystagogy",
-  COMPLETED: "Completed",
-};
 
 const attendanceStatusLabel: Record<string, string> = {
   PRESENT: "Present",
@@ -90,6 +83,18 @@ export default async function RosterPage({
   const [participants, existingRecords] = await Promise.all([
     prisma.participant.findMany({
       where: { cycleId: cycle.id, group, status: "ACTIVE" },
+      include: {
+        sacramentalRecord: {
+          select: {
+            baptismType: true,
+            hasFirstCommunion: true,
+            hasConfirmation: true,
+            electionDate: true,
+            easterVigilDate: true,
+            completedAt: true,
+          },
+        },
+      },
       orderBy: { lastName: "asc" },
     }),
     activeSessionId
@@ -195,7 +200,7 @@ export default async function RosterPage({
                             <span className="text-xs text-gray-400 italic shrink-0">({p.preferredName})</span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 mt-0.5 ml-4">{stageLabel[p.ociaStage]}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 ml-4">{deriveOciaLabel(p.sacramentalRecord).label}</p>
                       </div>
                       <span className={`shrink-0 text-xs font-medium ${
                         status ? attendanceStatusClass[status] ?? "text-gray-600" : "text-gray-300"
@@ -214,7 +219,12 @@ export default async function RosterPage({
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-10">#</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Preferred Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Stage</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-0.5">
+                        Stage
+                        <OciaProfileLegend />
+                      </span>
+                    </th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       {hasRecords ? "Status" : "Attendance"}
                     </th>
@@ -228,7 +238,7 @@ export default async function RosterPage({
                         <td className="px-4 py-3 text-gray-500 text-xs">{i + 1}</td>
                         <td className="px-4 py-3 font-medium text-gray-900">{p.fullName}</td>
                         <td className="px-4 py-3 text-gray-500 italic text-xs">{p.preferredName ?? ""}</td>
-                        <td className="px-4 py-3 text-gray-600">{stageLabel[p.ociaStage]}</td>
+                        <td className="px-4 py-3 text-gray-600">{deriveOciaLabel(p.sacramentalRecord).label}</td>
                         <td className={`px-4 py-3 ${status ? attendanceStatusClass[status] ?? "text-gray-600" : "text-gray-300"}`}>
                           {status ? attendanceStatusLabel[status] ?? status : "—"}
                         </td>

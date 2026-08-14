@@ -8,14 +8,18 @@ const GROUPS = [
   { value: "SPANISH", label: "Spanish" },
 ];
 
-const STAGES = [
-  { value: "", label: "All stages" },
-  { value: "INQUIRY", label: "Inquiry" },
-  { value: "CATECHUMEN", label: "Catechumen" },
-  { value: "CANDIDATE", label: "Candidate" },
-  { value: "ELECT", label: "Elect" },
-  { value: "MYSTAGOGY", label: "Mystagogy" },
-  { value: "COMPLETED", label: "Completed" },
+const PROFILES = [
+  { value: "", label: "All profiles" },
+  { value: "catechumen", label: "Catechumen" },
+  { value: "candidate_unverified", label: "Candidate (Baptism Unverified)" },
+  { value: "candidate", label: "Candidate" },
+  { value: "candidate_for_sacraments", label: "Candidate for Sacraments" },
+  { value: "candidate_for_confirmation", label: "Catholic Candidate" },
+  { value: "elect", label: "Elect" },
+  { value: "mystagogy", label: "Mystagogy" },
+  { value: "completed", label: "Completed" },
+  { value: "fully_initiated", label: "Fully Initiated" },
+  { value: "unknown", label: "Unknown" },
 ];
 
 const STATUSES = [
@@ -58,7 +62,7 @@ export function ParticipantFilters() {
       />
       {[
         { key: "group", options: GROUPS },
-        { key: "stage", options: STAGES },
+        { key: "stage", options: PROFILES },
         { key: "status", options: STATUSES },
       ].map(({ key, options }) => (
         <select
