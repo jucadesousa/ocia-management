@@ -250,19 +250,23 @@ An enum that records the nature of a participant's baptism:
 
 At registration, `baptismType` is **auto-suggested** from the registrant's answers (`isBaptized` + `baptismDenomination`). Admins review and correct it in the Sacramental Record edit form after the intake interview.
 
-### Derived OCIA Label
-`lib/ocia-stage.ts` exports `deriveOciaLabel()`, which maps the combination of `baptismType` + `hasFirstCommunion` + `hasConfirmation` to a human-readable label shown on the attendance roster:
+### Derived OCIA Label (OCIA Profile)
+`lib/ocia-stage.ts` exports `deriveOciaLabel()`, which first checks the OCIA milestone dates (`completedAt`, `easterVigilDate`, `electionDate`) and, if none are set yet, falls back to the combination of `baptismType` + `hasFirstCommunion` + `hasConfirmation`:
 
 | Profile | Derived Label |
 |---|---|
+| `completedAt` set | Completed |
+| `easterVigilDate` set | Mystagogy |
+| `electionDate` set | Elect |
 | Not baptized | Catechumen |
 | Other Christian, unverified | Candidate (Baptism Unverified) |
 | Other Christian, valid trinitarian | Candidate |
 | Catholic — no First Communion | Candidate for Sacraments |
 | Catholic — has Communion, no Confirmation | Catholic Candidate |
 | Catholic — fully initiated | Fully Initiated |
+| No sacramental record at all | Unknown |
 
-The label is computed server-side and rendered as a color-coded pill on each row of the attendance roster.
+The label is computed server-side and rendered as a color-coded pill. It's used on the Attendance roster/reports, Ministry Overview (Stage Distribution and Missing Documents), Session Roster's Stage column, and the Participants list badge. A companion function, `ociaProfileWhere()`, translates any of these categories into a Prisma filter — this is what powers the Participants list's profile filter dropdown, keeping list filtering in sync with the displayed label.
 
 ---
 

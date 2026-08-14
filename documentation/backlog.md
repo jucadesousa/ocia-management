@@ -39,21 +39,23 @@ Items discussed but not yet implemented. Prioritize before picking up.
 
 ## Remove Manual `ociaStage` Field — Rely Solely on OCIA Profile (Tech Debt)
 
-**Context:** The `Participant` table has a manual `ociaStage` enum field (INQUIRY, CATECHUMEN, CANDIDATE, ELECT, MYSTAGOGY, COMPLETED) that defaults to INQUIRY and must be updated by hand. The computed `deriveOciaLabel()` function already derives the correct stage automatically from sacramental data. Both are currently displayed on the detail page, list page, and reports — creating redundancy and confusion when the manual field goes stale.
+**Context:** The `Participant` table has a manual `ociaStage` enum field (INQUIRY, CATECHUMEN, CANDIDATE, ELECT, MYSTAGOGY, COMPLETED) that defaults to INQUIRY and must be updated by hand. The computed `deriveOciaLabel()` function (`lib/ocia-stage.ts`) already derives the correct profile automatically from sacramental data, and now also covers Elect/Mystagogy/Completed via the `electionDate`/`easterVigilDate`/`completedAt` milestone fields.
+
+**Progress:** Ministry Overview, Session Roster, and the Participants list filter (`ociaProfileWhere()` in `lib/ocia-stage.ts`) have already been switched over to the computed profile — done, not just proposed. What's left:
+- The Contacts report and the participant detail page still display the manual `ociaStage` badge.
+- The participant edit form still has the manual Stage dropdown.
+- The `ociaStage` column and `OciaStage` enum are still in the Prisma schema/database — dropping them requires a migration.
 
 **Proposed solution:**
-- Remove the manual Stage field from all UI surfaces (detail page header, profile tab, list page, roster/contacts/ministry reports).
-- Rely exclusively on the computed OCIA Profile (`deriveOciaLabel()`) for stage display.
+- Replace the manual Stage badge on the Contacts report and participant detail page with the computed OCIA Profile.
+- Remove the Stage dropdown from the participant edit form.
 - Drop the `ociaStage` column from the Prisma schema and database (requires a migration).
-- The ELECT and MYSTAGOGY stages (not covered by `deriveOciaLabel()`) are already trackable via the Election date and Easter Vigil date milestone fields on the sacramental record.
 
 **Files likely affected:**
 - `prisma/schema.prisma` — remove `ociaStage` field and `OciaStage` enum
 - `app/(auth)/participants/[id]/page.tsx` — remove Stage badge and Stage row
-- `app/(auth)/participants/page.tsx` — remove ociaStage badge and filter
-- `app/(auth)/participants/_components/filters.tsx` — remove stage filter
 - `app/(auth)/participants/_components/participant-form.tsx` — remove stage dropdown
-- `app/(auth)/reports/roster/page.tsx`, `contacts/page.tsx`, `ministry/page.tsx` — replace ociaStage with computed label
+- `app/(auth)/reports/contacts/page.tsx` — replace ociaStage with computed label
 
 ---
 

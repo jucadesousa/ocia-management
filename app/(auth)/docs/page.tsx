@@ -78,7 +78,7 @@ function OverviewTab() {
             An adult enrolled in the current cycle. Each participant belongs to a language group (English or Spanish), has a status (Active, Withdrawn, On Hold), and has a sacramental record that determines their OCIA Profile.
           </KV>
           <KV term="OCIA Profile">
-            A computed label based on the participant's sacramental data — baptism type, First Communion, and Confirmation. It updates automatically when the sacramental record changes.
+            A computed label based on the participant's sacramental data — baptism type, First Communion, Confirmation, and OCIA milestone dates (Election, Easter Vigil, Completion). It updates automatically when the sacramental record changes.
           </KV>
         </dl>
       </Section>
@@ -92,7 +92,11 @@ function OverviewTab() {
             { label: "Candidate (Baptism Unverified)", color: "bg-yellow-100 text-yellow-700", desc: "Baptism in another tradition not yet verified." },
             { label: "Candidate for Sacraments", color: "bg-orange-100 text-orange-700", desc: "Catholic baptized, but has not received First Communion or Confirmation." },
             { label: "Catholic Candidate", color: "bg-teal-100 text-teal-700", desc: "Catholic baptized and has First Communion, but not yet Confirmation." },
+            { label: "Elect", color: "bg-indigo-100 text-indigo-700", desc: "Has celebrated the Rite of Election, marked by an Election date on the Sacramental tab." },
+            { label: "Mystagogy", color: "bg-pink-100 text-pink-700", desc: "Has celebrated the Easter Vigil, marked by an Easter Vigil date on the Sacramental tab." },
+            { label: "Completed", color: "bg-emerald-100 text-emerald-700", desc: "Marked complete on the Sacramental tab." },
             { label: "Fully Initiated", color: "bg-green-100 text-green-700", desc: "Has received all three sacraments of initiation." },
+            { label: "Unknown", color: "bg-gray-100 text-gray-500", desc: "No sacramental record has been filled in yet." },
           ].map(({ label, color, desc }) => (
             <div key={label} className="flex items-start gap-3">
               <div className="pt-0.5 shrink-0"><Badge label={label} color={color} /></div>
@@ -147,6 +151,12 @@ function ParticipantsTab() {
         </P>
       </Section>
 
+      <Section title="Filtering the list">
+        <P>
+          The Participants list can be filtered by <strong>group</strong>, <strong>status</strong>, and <strong>OCIA Profile</strong> (the computed label, not the manual Stage field), plus a free-text search across name, email, and phone.
+        </P>
+      </Section>
+
       <Section title="Participant profile tabs">
         <dl className="space-y-3">
           <KV term="Profile">Personal details: name, contact info, address, sponsor, notes, and current OCIA placement (stage, group, status).</KV>
@@ -158,6 +168,9 @@ function ParticipantsTab() {
       <Section title="The OCIA Profile badge">
         <P>
           The colored badge shown in the participant header and list is computed automatically from the sacramental record. To update it, edit the participant's sacramental record and set the correct <strong>Baptism type</strong>, <strong>First Communion</strong>, and <strong>Confirmation</strong> values. The badge will reflect the change immediately.
+        </P>
+        <P>
+          For participants who've reached <strong>Elect</strong>, <strong>Mystagogy</strong>, or <strong>Completed</strong>, set the corresponding <strong>Election date</strong>, <strong>Easter Vigil date</strong>, or <strong>Completed</strong> date on the Sacramental tab once staff confirm they attended that rite — the badge updates from those dates rather than a separate dropdown.
         </P>
         <Note>
           The <strong>Baptism type</strong> field drives the profile label — not the simple "Baptized?" yes/no field. Make sure to select the correct type (Catholic, Other Christian — valid, Other Christian — unverified, or Not baptized).
@@ -271,16 +284,19 @@ function ReportsTab() {
             A full grid showing every active participant as a row and every session as a column. The OCIA Profile badge is shown for each participant. Attendance totals are calculated per participant and per session. Exportable to Excel.
           </KV>
           <KV term="Roster">
-            Two sections: the <em>Session Roster</em> (attendance status for a selected session) and the <em>Blank Volunteer Sheet</em> (a printable sign-in table with checkboxes for P / A / E). Names are listed Last, First.
+            Two sections: the <em>Session Roster</em> (attendance status for a selected session, with each participant's OCIA Profile shown in the Stage column) and the <em>Blank Volunteer Sheet</em> (a printable sign-in table with checkboxes for P / A / E). Names are listed Last, First.
           </KV>
           <KV term="Session Schedule">
             A full list of sessions for the current cycle with their title, presenter, date, and status. Visible to volunteers as well as admins, since the <strong>Sessions</strong> management page in the sidebar is admin-only.
           </KV>
-          <KV term="Ministry">
-            Lists participants alongside their sponsor and family information. Useful for ministry team coordination.
+          <KV term="Ministry Overview">
+            Two sections: <em>Stage Distribution</em>, a bar chart of active participants grouped by OCIA Profile, and <em>Missing Documents</em>, a list of active participants missing a sacramental record or baptism proof — with a filtered count, English/Spanish filter tabs, and participant photos/names linking to their profile. Exportable to Excel, including Phone and Email columns.
           </KV>
           <KV term="Contacts">
             A contact directory for all active participants, including phone numbers and email addresses. Exportable to Excel.
+          </KV>
+          <KV term="Flocknote Export">
+            Exports active participants' First Name, Last Name, Email, and Phone as an Excel file formatted to match Flocknote's bulk-import template, so the list can be uploaded directly with no reformatting.
           </KV>
         </dl>
       </Section>
@@ -293,7 +309,7 @@ function ReportsTab() {
 
       <Section title="Exporting to Excel">
         <P>
-          The <strong>Attendance</strong> and <strong>Contacts</strong> reports have an <em>Export to Excel</em> button. The file downloads immediately and includes all data currently shown on screen, respecting any active filters.
+          The <strong>Attendance</strong>, <strong>Ministry Overview</strong>, <strong>Contacts</strong>, and <strong>Flocknote Export</strong> reports have an <em>Export to Excel</em> button. The file downloads immediately and includes all data currently shown on screen, respecting any active filters.
         </P>
       </Section>
 

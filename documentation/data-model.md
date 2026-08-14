@@ -94,6 +94,31 @@ Not shown as an edge above: the public `/calendar` view merges `CalendarEvent` r
                               at any point) ────────────────────────────┘
 ```
 
+> This is the **manual** `ociaStage` field's linear model. Most of the app now shows a **computed OCIA Profile** instead — see below — which covers more nuance (e.g. baptism validity) and derives Elect/Mystagogy/Completed from milestone dates rather than a hand-set dropdown.
+
+---
+
+## OCIA Profile (Computed)
+
+`lib/ocia-stage.ts` exports `deriveOciaLabel()`, which computes a participant's real-time OCIA category from their `SacramentalRecord` — no manual update needed. It checks, in order:
+
+1. **Milestone dates** — `completedAt` → **Completed**; else `easterVigilDate` → **Mystagogy**; else `electionDate` → **Elect**. These are still set by hand (on the Sacramental tab), but only once staff confirm the participant actually attended that rite — not a separate stage dropdown.
+2. **Baptism/sacrament data**, if no milestone date is set yet:
+
+| `baptismType` | Additional condition | Derived label |
+|---|---|---|
+| `NONE` | — | Catechumen |
+| `OTHER_UNVERIFIED` | — | Candidate (Baptism Unverified) |
+| `OTHER_VALID` | — | Candidate |
+| `CATHOLIC` | no First Communion | Candidate for Sacraments |
+| `CATHOLIC` | Communion, no Confirmation | Catholic Candidate |
+| `CATHOLIC` | Communion and Confirmation | Fully Initiated |
+| *(no sacramental record at all)* | — | Unknown |
+
+A matching `ociaProfileWhere()` helper (same file) translates any of these categories into a Prisma filter, so list/report filtering stays in sync with what's displayed — used by the Participants list filter dropdown.
+
+**Where the computed profile is used:** Ministry Overview (Stage Distribution, Missing Documents), Session Roster's Stage column, the Participants list badge and its filter dropdown, and the Attendance roster/reports. The Contacts report and the participant edit form's dropdown are the remaining places still showing the manual `ociaStage` field (see backlog).
+
 ---
 
 ## Key Relationships
@@ -138,7 +163,7 @@ An individual enrolled in OCIA. Belongs to one cycle and one language group.
 | firstName / lastName | String | Required |
 | fullName | String | Stored explicitly; defaults to first + last |
 | group | Enum | `ENGLISH` or `SPANISH` |
-| ociaStage | Enum | Current stage in the OCIA process |
+| ociaStage | Enum | Manual stage field — superseded by the computed OCIA Profile in most views (see below); still shown on the Contacts report and edit form |
 | status | Enum | `ACTIVE`, `INACTIVE`, or `WITHDRAWN` |
 | sponsorName | String? | Stored as plain text |
 | cycleId | String | Foreign key → Cycle |
@@ -213,7 +238,7 @@ A one-to-one extension of Participant tracking sacramental history and OCIA mile
 | Children | `hasChildren`, `childrenNotes` |
 | OCIA Milestones | `riteOfAcceptanceDate`, `electionDate`, `easterVigilDate`, `completedAt` |
 
-> The `ociaStage` field on **Participant** tracks *where they are in the process*. The **SacramentalRecord** tracks *what sacraments they've received and when*.
+> The `ociaStage` field on **Participant** is the manual stage tracker. The **SacramentalRecord** feeds the computed **OCIA Profile** (see above) — *what sacraments they've received and when* — which is what most views now show instead.
 
 ---
 
