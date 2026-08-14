@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/dal";
-import { BarChart2, ClipboardList, Phone, Layers, CalendarDays } from "lucide-react";
+import { BarChart2, ClipboardList, Phone, Layers, CalendarDays, Send } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export default async function ReportsPage() {
@@ -38,6 +38,14 @@ export default async function ReportsPage() {
         "Phone and email for all active participants, filterable by group.",
       badge: "Print · Excel",
       icon: Phone,
+    },
+    {
+      href: "/reports/flocknote",
+      title: "Flocknote Export",
+      description:
+        "First name, last name, email, and phone for active participants, formatted for Flocknote's bulk import.",
+      badge: "Excel export",
+      icon: Send,
     },
     {
       href: "/reports/ministry",
