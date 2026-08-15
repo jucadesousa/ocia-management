@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
+import { todayUTCMidnight } from "@/lib/timezone";
 import { CalendarDays } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -36,8 +37,7 @@ export default async function DashboardPage() {
 
   const threshold = cycle?.atRiskThresholdPercent ?? 75;
 
-  const startOfToday = new Date();
-  startOfToday.setUTCHours(0, 0, 0, 0);
+  const startOfToday = todayUTCMidnight();
 
   const upcomingSession = cycle
     ? await prisma.session.findFirst({

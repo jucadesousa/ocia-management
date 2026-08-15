@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { todayUTCMidnight } from "@/lib/timezone";
 import type { EventCategory, SessionType } from "@prisma/client";
 
 export type CalendarCategory = SessionType | EventCategory;
@@ -71,7 +72,7 @@ export function monthKeyOf(date: Date): string {
 }
 
 export function currentMonthKey(): string {
-  return monthKeyOf(new Date());
+  return monthKeyOf(todayUTCMidnight());
 }
 
 export function shiftMonthKey(monthKey: string, delta: number): string {

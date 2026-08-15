@@ -1,5 +1,6 @@
 import type { CalendarEntry } from "@/lib/calendar";
 import { buildMonthMatrix } from "@/lib/calendar";
+import { todayKey } from "@/lib/timezone";
 import { categoryInfo } from "./category-badge";
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -11,7 +12,7 @@ function dateKey(date: Date): string {
 
 export function MonthGrid({ entries, month }: { entries: CalendarEntry[]; month: string }) {
   const weeks = buildMonthMatrix(month);
-  const todayKey = dateKey(new Date());
+  const currentTodayKey = todayKey();
 
   const entriesByDay = new Map<string, CalendarEntry[]>();
   for (const entry of entries) {
@@ -36,7 +37,7 @@ export function MonthGrid({ entries, month }: { entries: CalendarEntry[]; month:
             const dayEntries = key ? entriesByDay.get(key) ?? [] : [];
             const visible = dayEntries.slice(0, MAX_CHIPS_PER_DAY);
             const overflow = dayEntries.length - visible.length;
-            const isToday = key === todayKey;
+            const isToday = key === currentTodayKey;
 
             return (
               <div
