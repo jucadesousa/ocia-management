@@ -4,7 +4,14 @@ import { createStaffUser, updateUserRole, removeUser, setUserPassword } from "@/
 import type { SettingsFormState } from "@/app/actions/settings";
 import { useActionToast } from "@/hooks/use-action-toast";
 
-type User = { id: string; name: string; email: string; role: string };
+type User = { id: string; name: string; email: string; role: string; photoUrl: string | null };
+
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2)
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return (name[0] ?? "?").toUpperCase();
+}
 
 const inputCls =
   "w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -136,9 +143,22 @@ export function UsersTab({
               <li key={u.id} className="px-4 py-4">
                 {/* Top row: name + role badge/selector */}
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{u.name}</p>
-                    <p className="text-xs text-gray-500 truncate mt-0.5">{u.email}</p>
+                  <div className="flex items-center gap-3 min-w-0">
+                    {u.photoUrl ? (
+                      <img
+                        src={u.photoUrl}
+                        alt={u.name}
+                        className="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-700 shrink-0 select-none">
+                        {initials(u.name)}
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{u.name}</p>
+                      <p className="text-xs text-gray-500 truncate mt-0.5">{u.email}</p>
+                    </div>
                   </div>
 
                   {u.id !== currentUserId ? (
