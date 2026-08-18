@@ -4,16 +4,16 @@ import { requireAuth } from "@/lib/dal";
 import { ExcelExportButton } from "../_components/excel-export-button";
 import { PrintButton } from "../_components/print-button";
 import { Breadcrumb } from "@/components/breadcrumb";
-import type { Group, OciaStage } from "@prisma/client";
+import { deriveOciaLabel } from "@/lib/ocia-stage";
+import { OciaProfileLegend } from "@/app/(auth)/participants/_components/ocia-profile-legend";
+import type { Group } from "@prisma/client";
 
-const stageLabel: Record<OciaStage, string> = {
-  INQUIRY: "Inquiry",
-  CATECHUMEN: "Catechumen",
-  CANDIDATE: "Candidate",
-  ELECT: "Elect",
-  MYSTAGOGY: "Mystagogy",
-  COMPLETED: "Completed",
-};
+function initials(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2)
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  return (name[0] ?? "?").toUpperCase();
+}
 
 type SearchParams = Promise<{ group?: string }>;
 
@@ -47,6 +47,7 @@ export default async function ContactsReportPage({
       id: true,
       fullName: true,
       preferredName: true,
+      photoUrl: true,
       group: true,
       phone: true,
       phoneWork: true,
@@ -55,7 +56,16 @@ export default async function ContactsReportPage({
       city: true,
       state: true,
       zipCode: true,
-      ociaStage: true,
+      sacramentalRecord: {
+        select: {
+          baptismType: true,
+          hasFirstCommunion: true,
+          hasConfirmation: true,
+          electionDate: true,
+          easterVigilDate: true,
+          completedAt: true,
+        },
+      },
     },
   });
 
@@ -63,7 +73,7 @@ export default async function ContactsReportPage({
     Name: p.fullName,
     "Preferred Name": p.preferredName ?? "",
     Group: p.group === "ENGLISH" ? "English" : "Spanish",
-    Stage: stageLabel[p.ociaStage],
+    "OCIA Profile": deriveOciaLabel(p.sacramentalRecord).label,
     Phone: p.phone ?? "",
     "Work Phone": p.phoneWork ?? "",
     Email: p.email ?? "",
@@ -143,31 +153,44 @@ export default async function ContactsReportPage({
             {/* Mobile cards */}
             <ul className="md:hidden divide-y divide-gray-100">
               {participants.map((p) => (
-                <li key={p.id} className="px-4 py-3 space-y-1">
-                  <div>
-                    <span className="text-sm font-medium text-gray-900">{p.fullName}</span>
-                    {p.preferredName && (
-                      <span className="ml-1 text-xs text-gray-400 italic">({p.preferredName})</span>
+                <li key={p.id} className="px-4 py-3 flex items-start gap-3">
+                  {p.photoUrl ? (
+                    <img
+                      src={p.photoUrl}
+                      alt={p.fullName}
+                      className="w-10 h-10 rounded-full object-cover border border-gray-200 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-semibold text-blue-700 shrink-0 select-none">
+                      {initials(p.fullName)}
+                    </div>
+                  )}
+                  <div className="min-w-0 space-y-1">
+                    <div>
+                      <span className="text-sm font-medium text-gray-900">{p.fullName}</span>
+                      {p.preferredName && (
+                        <span className="ml-1 text-xs text-gray-400 italic">({p.preferredName})</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                      {p.group === "ENGLISH" ? "English" : "Spanish"} · {deriveOciaLabel(p.sacramentalRecord).label}
+                    </p>
+                    {p.phone && (
+                      <a href={`tel:${p.phone}`} className="block text-sm text-blue-600">
+                        {p.phone}
+                      </a>
+                    )}
+                    {p.phoneWork && (
+                      <a href={`tel:${p.phoneWork}`} className="block text-sm text-blue-600">
+                        {p.phoneWork} <span className="text-xs text-gray-400">(work)</span>
+                      </a>
+                    )}
+                    {p.email && (
+                      <a href={`mailto:${p.email}`} className="block text-sm text-blue-600 truncate">
+                        {p.email}
+                      </a>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">
-                    {p.group === "ENGLISH" ? "English" : "Spanish"} · {stageLabel[p.ociaStage]}
-                  </p>
-                  {p.phone && (
-                    <a href={`tel:${p.phone}`} className="block text-sm text-blue-600">
-                      {p.phone}
-                    </a>
-                  )}
-                  {p.phoneWork && (
-                    <a href={`tel:${p.phoneWork}`} className="block text-sm text-blue-600">
-                      {p.phoneWork} <span className="text-xs text-gray-400">(work)</span>
-                    </a>
-                  )}
-                  {p.email && (
-                    <a href={`mailto:${p.email}`} className="block text-sm text-blue-600 truncate">
-                      {p.email}
-                    </a>
-                  )}
                 </li>
               ))}
             </ul>
@@ -176,20 +199,44 @@ export default async function ContactsReportPage({
             <table className="hidden md:table w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  {["Full Name", "Preferred Name", "Group", "Stage", "Phone", "Work Phone", "Email"].map((h) => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      {h}
-                    </th>
-                  ))}
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Preferred Name</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Group</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-0.5">
+                      OCIA Profile
+                      <span className="no-print">
+                        <OciaProfileLegend />
+                      </span>
+                    </span>
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Work Phone</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {participants.map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 font-medium text-gray-900">{p.fullName}</td>
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      <div className="flex items-center gap-3">
+                        {p.photoUrl ? (
+                          <img
+                            src={p.photoUrl}
+                            alt={p.fullName}
+                            className="w-8 h-8 rounded-full object-cover border border-gray-200 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-700 shrink-0 select-none">
+                            {initials(p.fullName)}
+                          </div>
+                        )}
+                        <span>{p.fullName}</span>
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-gray-500 italic text-xs">{p.preferredName ?? "—"}</td>
                     <td className="px-4 py-3 text-gray-600">{p.group === "ENGLISH" ? "English" : "Spanish"}</td>
-                    <td className="px-4 py-3 text-gray-600">{stageLabel[p.ociaStage]}</td>
+                    <td className="px-4 py-3 text-gray-600">{deriveOciaLabel(p.sacramentalRecord).label}</td>
                     <td className="px-4 py-3 text-gray-600">
                       {p.phone ? <a href={`tel:${p.phone}`} className="hover:text-blue-600">{p.phone}</a> : <span className="text-gray-400">—</span>}
                     </td>
