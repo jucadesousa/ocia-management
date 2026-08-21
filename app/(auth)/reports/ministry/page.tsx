@@ -235,9 +235,11 @@ export default async function MinistryOverviewPage({
         <a href="#stage-distribution" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
           Stage Distribution
         </a>
-        <a href="#missing-documents" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
-          Missing Documents
-        </a>
+        {user.role === "ADMIN" && (
+          <a href="#missing-documents" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+            Missing Documents
+          </a>
+        )}
         {user.role === "ADMIN" && (
           <a href="#canonical-status-review" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
             Canonical Status Review
@@ -312,7 +314,8 @@ export default async function MinistryOverviewPage({
         </div>
       </section>
 
-      {/* ─── Section 2: Missing Documents ──────────────────────────────────── */}
+      {/* ─── Section 2: Missing Documents (ADMIN only) ─────────────────────── */}
+      {user.role === "ADMIN" && (
       <section id="missing-documents" className="scroll-mt-16 md:scroll-mt-4">
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
@@ -456,6 +459,7 @@ export default async function MinistryOverviewPage({
           )}
         </div>
       </section>
+      )}
 
       {/* ─── Section 3: Canonical Status Review (ADMIN only) ──────────────── */}
       {user.role === "ADMIN" && (
