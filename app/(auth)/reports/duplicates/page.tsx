@@ -21,9 +21,10 @@ function normalizeEmail(email: string | null): string | null {
 
 function normalizePhone(phone: string | null): string | null {
   if (!phone) return null;
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length < 7) return null; // too short to be a reliable match
-  return digits.slice(-10);
+  let digits = phone.replace(/\D/g, "");
+  if (digits.length === 11 && digits.startsWith("1")) digits = digits.slice(1);
+  if (digits.length !== 10) return null; // require a full number, not a partial one
+  return digits;
 }
 
 function normalizeName(first: string, last: string): string {
@@ -151,10 +152,11 @@ export default async function DuplicateParticipantsReportPage() {
     const email = normalizeEmail(p.email);
     if (email) emailMap.set(email, [...(emailMap.get(email) ?? []), p.id]);
 
-    for (const raw of [p.phone, p.phoneWork]) {
-      const ph = normalizePhone(raw);
-      if (ph) phoneMap.set(ph, [...(phoneMap.get(ph) ?? []), p.id]);
-    }
+    // Only the primary phone is matched — it's what the report displays, and
+    // work numbers are too often shared by unrelated people (family business,
+    // shared office line) to be a reliable duplicate signal.
+    const ph = normalizePhone(p.phone);
+    if (ph) phoneMap.set(ph, [...(phoneMap.get(ph) ?? []), p.id]);
 
     const name = normalizeName(p.firstName, p.lastName);
     if (name.length > 2) nameMap.set(name, [...(nameMap.get(name) ?? []), p.id]);
