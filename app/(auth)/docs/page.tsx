@@ -328,6 +328,9 @@ function ReportsTab() {
           <KV term="Duplicate Participants">
             Groups participants in the current cycle who share the same email, phone number, or first/last name — catching cases where someone registered themselves more than once. Each group shows every matching record side by side (photo, contact info, OCIA Profile, registration date, attendance) with a <em>Suggested keep</em> flag on the record with the most attendance and the most complete profile. Review the group and delete the extra record from that participant's profile page. Exportable to Excel.
           </KV>
+          <KV term="Data Quality">
+            Admin-only. Flags active participants whose record has an internal inconsistency — fields that should agree with each other but do not, such as a marital status that does not match the sacramental record&apos;s marriage status. There is no separate review workflow: fixing the underlying field on the participant&apos;s profile removes the flag automatically the next time the report loads. Exportable to Excel.
+          </KV>
         </dl>
       </Section>
 

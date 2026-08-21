@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/dal";
-import { BarChart2, ClipboardList, Phone, Layers, CalendarDays, Send, Copy } from "lucide-react";
+import { BarChart2, ClipboardList, Phone, Layers, CalendarDays, Send, Copy, AlertTriangle } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export default async function ReportsPage() {
-  await requireAuth();
+  const user = await requireAuth();
 
   const cards: { href: string; title: string; description: string; badge: string; icon: LucideIcon }[] = [
     {
@@ -63,6 +63,18 @@ export default async function ReportsPage() {
       badge: "Excel export",
       icon: Copy,
     },
+    ...(user.role === "ADMIN"
+      ? [
+          {
+            href: "/reports/data-quality",
+            title: "Data Quality",
+            description:
+              "Active participants whose record has an internal inconsistency, such as a marital status that doesn't match the sacramental record.",
+            badge: "Excel export",
+            icon: AlertTriangle,
+          },
+        ]
+      : []),
   ];
 
   return (
