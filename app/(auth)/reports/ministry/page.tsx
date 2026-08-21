@@ -231,8 +231,22 @@ export default async function MinistryOverviewPage({
         <p className="text-sm text-gray-500 mt-0.5">{cycle.name}</p>
       </div>
 
+      <nav className="no-print flex flex-wrap items-center gap-2">
+        <a href="#stage-distribution" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+          Stage Distribution
+        </a>
+        <a href="#missing-documents" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+          Missing Documents
+        </a>
+        {user.role === "ADMIN" && (
+          <a href="#canonical-status-review" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+            Canonical Status Review
+          </a>
+        )}
+      </nav>
+
       {/* ─── Section 1: Stage Distribution ─────────────────────────────────── */}
-      <section>
+      <section id="stage-distribution" className="scroll-mt-16 md:scroll-mt-4">
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-200">
             <h2 className="text-lg font-semibold text-gray-900 inline-flex items-center gap-0.5">
@@ -299,7 +313,7 @@ export default async function MinistryOverviewPage({
       </section>
 
       {/* ─── Section 2: Missing Documents ──────────────────────────────────── */}
-      <section>
+      <section id="missing-documents" className="scroll-mt-16 md:scroll-mt-4">
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
             <div>
@@ -445,7 +459,7 @@ export default async function MinistryOverviewPage({
 
       {/* ─── Section 3: Canonical Status Review (ADMIN only) ──────────────── */}
       {user.role === "ADMIN" && (
-        <section>
+        <section id="canonical-status-review" className="scroll-mt-16 md:scroll-mt-4">
           <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
             <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between flex-wrap gap-3">
               <div>
