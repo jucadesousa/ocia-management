@@ -320,10 +320,13 @@ function ReportsTab() {
             Two sections: <em>Stage Distribution</em>, a bar chart of active participants grouped by OCIA Profile, and <em>Missing Documents</em>, a list of active participants missing a sacramental record or baptism proof — with a filtered count, English/Spanish filter tabs, and participant photos/names linking to their profile. Exportable to Excel, including Phone and Email columns.
           </KV>
           <KV term="Contacts">
-            A contact directory for all active participants, including phone numbers and email addresses. Exportable to Excel.
+            A contact directory for all active participants, showing each person's photo, OCIA Profile, phone numbers, and email address. Exportable to Excel.
           </KV>
           <KV term="Flocknote Export">
             Exports active participants' First Name, Last Name, Email, and Phone as an Excel file formatted to match Flocknote's bulk-import template, so the list can be uploaded directly with no reformatting.
+          </KV>
+          <KV term="Duplicate Participants">
+            Groups participants in the current cycle who share the same email, phone number, or first/last name — catching cases where someone registered themselves more than once. Each group shows every matching record side by side (photo, contact info, OCIA Profile, registration date, attendance) with a <em>Suggested keep</em> flag on the record with the most attendance and the most complete profile. Review the group and delete the extra record from that participant's profile page. Exportable to Excel.
           </KV>
         </dl>
       </Section>
@@ -336,7 +339,7 @@ function ReportsTab() {
 
       <Section title="Exporting to Excel">
         <P>
-          The <strong>Attendance</strong>, <strong>Ministry Overview</strong>, <strong>Contacts</strong>, and <strong>Flocknote Export</strong> reports have an <em>Export to Excel</em> button. The file downloads immediately and includes all data currently shown on screen, respecting any active filters.
+          The <strong>Attendance</strong>, <strong>Ministry Overview</strong>, <strong>Contacts</strong>, <strong>Flocknote Export</strong>, and <strong>Duplicate Participants</strong> reports have an <em>Export to Excel</em> button. The file downloads immediately and includes all data currently shown on screen, respecting any active filters.
         </P>
       </Section>
 

@@ -270,7 +270,7 @@ At registration, `baptismType` is **auto-suggested** from the registrant's answe
 | Catholic — fully initiated | Fully Initiated |
 | No sacramental record at all | Unknown |
 
-The label is computed server-side and rendered as a color-coded pill. It's used on the Attendance roster/reports, Ministry Overview (Stage Distribution and Missing Documents), Session Roster's Stage column, and the Participants list badge. A companion function, `ociaProfileWhere()`, translates any of these categories into a Prisma filter — this is what powers the Participants list's profile filter dropdown, keeping list filtering in sync with the displayed label.
+The label is computed server-side and rendered as a color-coded pill. It's used on the Attendance roster/reports, Ministry Overview (Stage Distribution and Missing Documents), Session Roster's Stage column, the Contacts and Duplicate Participants reports, and the Participants list badge. A companion function, `ociaProfileWhere()`, translates any of these categories into a Prisma filter — this is what powers the Participants list's profile filter dropdown, keeping list filtering in sync with the displayed label.
 
 ---
 

@@ -117,7 +117,7 @@ Not shown as an edge above: the public `/calendar` view merges `CalendarEvent` r
 
 A matching `ociaProfileWhere()` helper (same file) translates any of these categories into a Prisma filter, so list/report filtering stays in sync with what's displayed — used by the Participants list filter dropdown.
 
-**Where the computed profile is used:** Ministry Overview (Stage Distribution, Missing Documents), Session Roster's Stage column, the Participants list badge and its filter dropdown, and the Attendance roster/reports. The Contacts report and the participant edit form's dropdown are the remaining places still showing the manual `ociaStage` field (see backlog).
+**Where the computed profile is used:** Ministry Overview (Stage Distribution, Missing Documents), Session Roster's Stage column, the Participants list badge and its filter dropdown, the Attendance roster/reports, and the Contacts and Duplicate Participants reports. The participant edit form's dropdown is the remaining place still showing the manual `ociaStage` field (see backlog).
 
 ---
 

@@ -41,13 +41,13 @@ Items discussed but not yet implemented. Prioritize before picking up.
 
 **Context:** The `Participant` table has a manual `ociaStage` enum field (INQUIRY, CATECHUMEN, CANDIDATE, ELECT, MYSTAGOGY, COMPLETED) that defaults to INQUIRY and must be updated by hand. The computed `deriveOciaLabel()` function (`lib/ocia-stage.ts`) already derives the correct profile automatically from sacramental data, and now also covers Elect/Mystagogy/Completed via the `electionDate`/`easterVigilDate`/`completedAt` milestone fields.
 
-**Progress:** Ministry Overview, Session Roster, and the Participants list filter (`ociaProfileWhere()` in `lib/ocia-stage.ts`) have already been switched over to the computed profile — done, not just proposed. What's left:
-- The Contacts report and the participant detail page still display the manual `ociaStage` badge.
+**Progress:** Ministry Overview, Session Roster, the Participants list filter (`ociaProfileWhere()` in `lib/ocia-stage.ts`), and now the Contacts and Duplicate Participants reports have all been switched over to the computed profile — done, not just proposed. What's left:
+- The participant detail page still displays the manual `ociaStage` badge.
 - The participant edit form still has the manual Stage dropdown.
 - The `ociaStage` column and `OciaStage` enum are still in the Prisma schema/database — dropping them requires a migration.
 
 **Proposed solution:**
-- Replace the manual Stage badge on the Contacts report and participant detail page with the computed OCIA Profile.
+- Replace the manual Stage badge on the participant detail page with the computed OCIA Profile.
 - Remove the Stage dropdown from the participant edit form.
 - Drop the `ociaStage` column from the Prisma schema and database (requires a migration).
 
@@ -55,7 +55,6 @@ Items discussed but not yet implemented. Prioritize before picking up.
 - `prisma/schema.prisma` — remove `ociaStage` field and `OciaStage` enum
 - `app/(auth)/participants/[id]/page.tsx` — remove Stage badge and Stage row
 - `app/(auth)/participants/_components/participant-form.tsx` — remove stage dropdown
-- `app/(auth)/reports/contacts/page.tsx` — replace ociaStage with computed label
 
 ---
 

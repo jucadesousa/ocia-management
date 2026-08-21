@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireAuth } from "@/lib/dal";
-import { BarChart2, ClipboardList, Phone, Layers, CalendarDays, Send } from "lucide-react";
+import { BarChart2, ClipboardList, Phone, Layers, CalendarDays, Send, Copy } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 export default async function ReportsPage() {
@@ -54,6 +54,14 @@ export default async function ReportsPage() {
         "Stage distribution, missing documents, and sacrament readiness.",
       badge: "Excel export",
       icon: Layers,
+    },
+    {
+      href: "/reports/duplicates",
+      title: "Duplicate Participants",
+      description:
+        "Groups participants who share an email, phone, or name so you can spot repeat registrations and decide which record to keep.",
+      badge: "Excel export",
+      icon: Copy,
     },
   ];
 
