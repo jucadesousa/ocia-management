@@ -72,6 +72,13 @@ enum BaptismType {
   OTHER_UNVERIFIED
 }
 
+enum CanonicalReviewStatus {
+  NOT_REVIEWED
+  REFERRED_TO_DEACON
+  CONVALIDATION_SCHEDULED
+  RESOLVED
+}
+
 enum EventCategory {
   RITE             // Acceptance, Welcoming, Election, Scrutiny I/II/III, Sending, Presentation of Creed
   HOLY_WEEK        // Chrism Mass, Holy Thursday, Good Friday, Easter Vigil, Easter Sunday
@@ -180,6 +187,7 @@ model SacramentalRecord {
   spouseHadPriorMarriage Boolean?
   marriageCertReceived  Boolean     @default(false)
   annulmentStatus       String?     // None, Pending, Granted
+  canonicalReviewStatus CanonicalReviewStatus @default(NOT_REVIEWED)
   // Children
   hasChildren           Boolean?
   childrenNotes         String?

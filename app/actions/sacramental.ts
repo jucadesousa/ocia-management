@@ -115,6 +115,31 @@ export async function upsertSacramentalRecord(
   redirect(`/participants/${participantId}?tab=sacramental`);
 }
 
+const CANONICAL_REVIEW_STATUS_VALUES = [
+  "NOT_REVIEWED",
+  "REFERRED_TO_DEACON",
+  "CONVALIDATION_SCHEDULED",
+  "RESOLVED",
+] as const;
+
+export async function updateCanonicalReviewStatus(
+  participantId: string,
+  formData: FormData
+): Promise<void> {
+  const user = await requireAuth();
+  if (user.role !== "ADMIN") return;
+
+  const status = formData.get("canonicalReviewStatus") as string;
+  if (!(CANONICAL_REVIEW_STATUS_VALUES as readonly string[]).includes(status)) return;
+
+  await prisma.sacramentalRecord.update({
+    where: { participantId },
+    data: { canonicalReviewStatus: status as (typeof CANONICAL_REVIEW_STATUS_VALUES)[number] },
+  });
+
+  revalidatePath("/reports/ministry");
+}
+
 export async function uploadParticipantPhoto(
   participantId: string,
   formData: FormData

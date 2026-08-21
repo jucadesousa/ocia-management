@@ -317,7 +317,7 @@ function ReportsTab() {
             A full list of sessions for the current cycle with their title, presenter, date, and status. Visible to volunteers as well as admins, since the <strong>Sessions</strong> management page in the sidebar is admin-only.
           </KV>
           <KV term="Ministry Overview">
-            Two sections: <em>Stage Distribution</em>, a bar chart of active participants grouped by OCIA Profile, and <em>Missing Documents</em>, a list of active participants missing a sacramental record or baptism proof — with a filtered count, English/Spanish filter tabs, and participant photos/names linking to their profile. Exportable to Excel, including Phone and Email columns.
+            <em>Stage Distribution</em>, a bar chart of active participants grouped by OCIA Profile; <em>Missing Documents</em>, a list of active participants missing a sacramental record or baptism proof — with a filtered count, English/Spanish filter tabs, and participant photos/names linking to their profile; and, for admins only, <em>Canonical Status Review</em>, which flags married active participants whose marriage may need the deacon's attention — an unresolved prior marriage bond, a marriage to a Catholic not witnessed by a priest or deacon, or a marriage whose canonical form was never documented. Each flagged case has an editable status (Not reviewed / Referred to deacon / Convalidation scheduled / Resolved) with Open/All/Resolved filter tabs. All sections are exportable to Excel, including Phone and Email columns.
           </KV>
           <KV term="Contacts">
             A contact directory for all active participants, showing each person's photo, OCIA Profile, phone numbers, and email address. Exportable to Excel.

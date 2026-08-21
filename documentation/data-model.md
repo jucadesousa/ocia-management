@@ -253,7 +253,7 @@ A one-to-one extension of Participant tracking sacramental history and OCIA mile
 |---|---|
 | Baptism | `isBaptized`, `baptismDenomination`, `baptismDate`, `baptismParish`, `baptismProofStatus` |
 | Sacraments | `hasFirstCommunion`, `hasConfirmation` |
-| Marriage | `marriageStatus`, `marriedToCatholic`, `marriedByCatholicPriest`, `hadPriorMarriage`, `annulmentStatus`, `marriageCertReceived` |
+| Marriage | `marriageStatus`, `marriedToCatholic`, `marriedByCatholicPriest`, `hadPriorMarriage`, `annulmentStatus`, `marriageCertReceived`, `canonicalReviewStatus` |
 | Children | `hasChildren`, `childrenNotes` |
 | OCIA Milestones | `riteOfAcceptanceDate`, `electionDate`, `easterVigilDate`, `completedAt` |
 
