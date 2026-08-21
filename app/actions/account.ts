@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { ALLOWED_PHOTO_TYPES, uploadPhoto } from "@/lib/supabase/photo-storage";
 
 export type ProfileFormState = { error?: string; success?: string } | undefined;
 
@@ -33,26 +33,16 @@ export async function uploadStaffPhoto(formData: FormData): Promise<{ error?: st
   const file = formData.get("photo") as File | null;
   if (!file || file.size === 0) return { error: "No file selected." };
 
-  const allowed = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
-  if (!allowed.includes(file.type)) return { error: "Only JPEG, PNG, WebP, or HEIC images are accepted." };
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) {
+    return { error: "Only JPEG, PNG, WebP, or HEIC images are accepted." };
+  }
 
-  const ext  = file.name.split(".").pop() ?? "jpg";
-  const path = `${user.id}.${ext}`;
-
-  const supabase = createAdminClient();
-  const { error: uploadError } = await supabase.storage
-    .from("staff-photos")
-    .upload(path, file, { upsert: true, contentType: file.type });
-
-  if (uploadError) return { error: `Upload failed: ${uploadError.message}` };
-
-  const { data: { publicUrl } } = supabase.storage
-    .from("staff-photos")
-    .getPublicUrl(path);
+  const result = await uploadPhoto("staff-photos", user.id, file);
+  if ("error" in result) return result;
 
   await prisma.user.update({
     where: { id: user.id },
-    data: { photoUrl: `${publicUrl}?t=${Date.now()}` },
+    data: { photoUrl: `${result.publicUrl}?t=${Date.now()}` },
   });
 
   revalidatePath("/account/profile");

@@ -142,6 +142,8 @@ Supabase Storage holds participant photos, staff photos, and uploaded documents 
 
 Files are referenced by URL in the database.
 
+Photo uploads (`lib/supabase/photo-storage.ts`, used by `uploadParticipantPhoto` and `uploadStaffPhoto`) always write to a normalized `{id}.jpg` key regardless of the source file's extension, so re-uploading in a different format overwrites the same object instead of leaving the old one behind. The `Content-Type` header is still set from the actual file, so rendering is unaffected. After a successful upload, any other leftover file for that id is removed on a best-effort basis. `scripts/cleanup-orphaned-photos.mjs` is a one-time (dry-run by default) script for clearing out files orphaned before this normalization existed, or left behind by deleted participants.
+
 **Key environment variables:**
 | Variable | Purpose |
 |---|---|
