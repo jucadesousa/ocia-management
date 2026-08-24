@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "sonner";
@@ -17,6 +17,15 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Lumen Catholic",
   description: "OCIA participant and attendance management for Saint Bartholomew the Apostle Catholic Church",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Lumen",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#B8892B",
 };
 
 export default function RootLayout({
