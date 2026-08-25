@@ -129,7 +129,7 @@ function ParticipantsTab() {
         </P>
         <UL>
           <LI>
-            <strong>Self-registration:</strong> A public registration form is available for prospective participants to fill out on their own device. Admins can find the link in <strong>Settings → Registration</strong>. Submitted forms create a new participant record immediately.
+            <strong>Self-registration:</strong> A public registration form is available for prospective participants to fill out on their own device, at the <strong>/register</strong> page. There is no link to it inside the app — the separate <strong>/qr</strong> page (also public, no login required) shows a scannable QR code and the URL as text, meant for printing or displaying on a screen. Submitted forms create a new participant record immediately.
           </LI>
           <LI>
             <strong>Manual entry:</strong> Admins can create a participant directly from the <strong>Participants</strong> page using the <em>New participant</em> button.
@@ -449,7 +449,7 @@ function SettingsTab() {
 
       <Section title="Registration form">
         <P>
-          A public self-registration form is available for prospective participants. Go to <strong>Settings → Registration</strong> to find the shareable link. This link can be posted on the parish website or shared directly with inquirers.
+          A public self-registration form is available for prospective participants, at the <strong>/register</strong> page. There is no admin page inside the app to look this up — visit <strong>/qr</strong> directly (also public, no login required) for a printable page with a scannable QR code and the link as text, ready to post on the parish website or share directly with inquirers.
         </P>
         <P>
           Submitted registrations are immediately added as participants in the current cycle with a status of <em>Active</em>. Review new registrations in the <strong>Participants</strong> list and complete their sacramental record.
