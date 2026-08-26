@@ -422,6 +422,15 @@ function BadgesTab() {
       <Note>
         If you close the print page without marking as printed, the participants will remain in the queue and can be reprinted. Use <em>Mark all as printed</em> only after confirming the print was successful.
       </Note>
+
+      <Section title="Team member badges">
+        <P>
+          Admins and volunteers get their own badges under <strong>Team Badges</strong> in the sidebar, printed the same 8-per-sheet way as participant badges. Team badges use a distinct gold-banded design with a small &quot;Team Member&quot; label under the name, so they're easy to tell apart from participant badges at a glance.
+        </P>
+        <P>
+          A team member must upload their own photo from <strong>My Profile</strong> to appear in the print queue — admins cannot upload a photo on someone else's behalf. The printing and mark-as-printed workflow otherwise works exactly like participant badges.
+        </P>
+      </Section>
     </div>
   );
 }

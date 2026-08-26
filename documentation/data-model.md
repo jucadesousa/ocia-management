@@ -152,6 +152,7 @@ A staff login account (ADMIN or VOLUNTEER) — separate from `Participant` and n
 | bio | String? | Short self-written summary shown on the public Team page |
 | photoUrl | String? | Supabase Storage public URL (`staff-photos` bucket) |
 | isPublished | Boolean | Default: false — must be explicitly turned on for the profile to appear on `/team` |
+| badgePrinted | Boolean | Default: false — tracks the printable Team Badges queue at `/team/badges`, independent of `isPublished` |
 
 > Staff edit their own `bio`/`photoUrl`/`isPublished` at **Account → My Profile**; the public `/team` and `/team/[id]` pages only ever show `isPublished: true` users.
 

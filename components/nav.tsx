@@ -29,6 +29,7 @@ const adminLinks = [
   { href: "/sessions",            label: "Sessions",      icon: CalendarDays },
   { href: "/calendar",            label: "Calendar",      icon: CalendarRange },
   { href: "/team",                label: "Team",          icon: Users2 },
+  { href: "/team/badges",         label: "Team Badges",   icon: BadgeCheck },
   { href: "/attendance",          label: "Attendance",    icon: ClipboardList },
   { href: "/reports",             label: "Reports",       icon: BarChart2 },
   { href: "/settings",            label: "Settings",      icon: Settings },
@@ -84,10 +85,11 @@ export function Nav({ role, name }: { role: Role; name: string }) {
             pathname === href ||
             (href !== "/dashboard" &&
               href !== "/participants" &&
+              href !== "/team" &&
               pathname.startsWith(href)) ||
-            (href === "/participants" &&
-              pathname.startsWith("/participants") &&
-              !pathname.startsWith("/participants/badges"));
+            ((href === "/participants" || href === "/team") &&
+              pathname.startsWith(href) &&
+              !pathname.startsWith(`${href}/badges`));
           const Icon = icon;
           return (
             <li key={href}>

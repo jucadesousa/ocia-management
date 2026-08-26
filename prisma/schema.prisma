@@ -102,6 +102,7 @@ model User {
   bio            String?
   photoUrl       String?
   isPublished    Boolean  @default(false)
+  badgePrinted   Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }

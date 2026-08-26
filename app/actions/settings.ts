@@ -106,6 +106,24 @@ export async function removeUser(userId: string): Promise<void> {
   revalidatePath("/settings");
 }
 
+export async function toggleUserBadgePrinted(formData: FormData): Promise<void> {
+  const me = await requireAuth();
+  if (me.role !== "ADMIN") return;
+  const id = formData.get("userId") as string;
+  const printed = formData.get("printed") === "true";
+  await prisma.user.update({ where: { id }, data: { badgePrinted: printed } });
+  revalidatePath("/team/badges");
+}
+
+export async function markAllUserBadgesPrinted(formData: FormData): Promise<void> {
+  const me = await requireAuth();
+  if (me.role !== "ADMIN") return;
+  const ids = (formData.get("userIds") as string).split(",").filter(Boolean);
+  await prisma.user.updateMany({ where: { id: { in: ids } }, data: { badgePrinted: true } });
+  revalidatePath("/team/badges");
+  redirect("/team/badges");
+}
+
 // ── Cycles ────────────────────────────────────────────────────────────────────
 
 export async function createCycle(
