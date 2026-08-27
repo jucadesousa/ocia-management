@@ -15,12 +15,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Lumen Catholic",
+  title: "Catecheo",
   description: "OCIA participant and attendance management for Saint Bartholomew the Apostle Catholic Church",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Lumen",
+    title: "Catecheo",
   },
 };
 

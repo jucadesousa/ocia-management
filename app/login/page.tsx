@@ -12,8 +12,8 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center flex flex-col items-center">
-          <Image src="/LumenLogo.svg" alt="Lumen Logo" width={200} height={200} priority />
-          <h1 className="mt-1 text-2xl font-bold text-lumen">Lumen Catholic</h1>
+          <Image src="/CatecheoLogo.svg" alt="Catecheo Logo" width={200} height={200} priority />
+          <h1 className="mt-1 text-2xl font-bold text-catecheo">Catecheo</h1>
           <p className="mt-1 text-sm text-gray-500">Saint Bartholomew the Apostle</p>
         </div>
 

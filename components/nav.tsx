@@ -74,7 +74,7 @@ export function Nav({ role, name }: { role: Role; name: string }) {
   const sidebarContent = (
     <>
       <div className="px-4 py-5 border-b border-gray-700 flex flex-col items-center">
-        <Image src="/LumenLogo.svg" alt="Lumen Logo" width={72} height={72} priority />
+        <Image src="/CatecheoLogo.svg" alt="Catecheo Logo" width={72} height={72} priority />
         <p className="mt-2 text-sm font-medium text-white truncate">{name}</p>
         <p className="text-xs text-gray-400">{role === "ADMIN" ? "Admin" : "Volunteer"}</p>
       </div>
@@ -97,7 +97,7 @@ export function Nav({ role, name }: { role: Role; name: string }) {
                 href={href}
                 className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors ${
                   active
-                    ? "bg-lumen/20 text-lumen font-medium border-l-2 border-lumen"
+                    ? "bg-catecheo/20 text-catecheo font-medium border-l-2 border-catecheo"
                     : "text-gray-300 hover:bg-gray-700 hover:text-white border-l-2 border-transparent"
                 }`}
               >
@@ -114,7 +114,7 @@ export function Nav({ role, name }: { role: Role; name: string }) {
           href="/account/profile"
           className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors border-l-2 ${
             pathname === "/account/profile"
-              ? "bg-lumen/20 text-lumen font-medium border-lumen"
+              ? "bg-catecheo/20 text-catecheo font-medium border-catecheo"
               : "text-gray-400 hover:bg-gray-700 hover:text-white border-transparent"
           }`}
         >
@@ -125,7 +125,7 @@ export function Nav({ role, name }: { role: Role; name: string }) {
           href="/account/password"
           className={`flex items-center gap-2.5 px-3 py-2 text-sm rounded-lg transition-colors border-l-2 ${
             pathname === "/account/password"
-              ? "bg-lumen/20 text-lumen font-medium border-lumen"
+              ? "bg-catecheo/20 text-catecheo font-medium border-catecheo"
               : "text-gray-400 hover:bg-gray-700 hover:text-white border-transparent"
           }`}
         >
@@ -157,7 +157,7 @@ export function Nav({ role, name }: { role: Role; name: string }) {
         >
           {open ? <CloseIcon /> : <HamburgerIcon />}
         </button>
-        <Image src="/LumenLogo_Horizontal.svg" alt="Lumen Catholic" width={120} height={80} className="ml-3 h-9 w-auto" />
+        <Image src="/CatecheoLogo_Horizontal.svg" alt="Catecheo" width={120} height={80} className="ml-3 h-9 w-auto" />
       </header>
 
       {/* ── Backdrop (mobile) ────────────────────────────────────── */}

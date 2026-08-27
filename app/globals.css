@@ -10,9 +10,9 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --color-lumen: #B8892B;
-  --color-lumen-light: #D4A843;
-  --color-lumen-dark: #9A7020;
+  --color-catecheo: #B8892B;
+  --color-catecheo-light: #D4A843;
+  --color-catecheo-dark: #9A7020;
   --animate-fade-in: fade-in 0.15s ease-out;
 }
 

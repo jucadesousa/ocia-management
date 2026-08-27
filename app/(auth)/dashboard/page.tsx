@@ -116,8 +116,8 @@ export default async function DashboardPage() {
       </div>
 
       {upcomingSession && (
-        <div className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-lumen p-5">
-          <p className="text-xs font-semibold text-lumen uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <div className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-catecheo p-5">
+          <p className="text-xs font-semibold text-catecheo uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <CalendarDays size={13} />
             Upcoming Session
           </p>
@@ -139,7 +139,7 @@ export default async function DashboardPage() {
             </div>
             <Link
               href="/attendance"
-              className="shrink-0 text-sm font-medium px-4 py-2 rounded-lg bg-lumen text-white hover:bg-lumen-dark transition-colors"
+              className="shrink-0 text-sm font-medium px-4 py-2 rounded-lg bg-catecheo text-white hover:bg-catecheo-dark transition-colors"
             >
               Take Attendance
             </Link>

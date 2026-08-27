@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Lumen Catholic",
-    short_name: "Lumen",
+    name: "Catecheo",
+    short_name: "Catecheo",
     description:
       "OCIA participant and attendance management for Saint Bartholomew the Apostle Catholic Church",
     start_url: "/",

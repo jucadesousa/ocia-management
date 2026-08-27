@@ -285,11 +285,11 @@ function LanguagePicker({ onSelect }: { onSelect: (l: Lang) => void }) {
     <main className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md space-y-8 text-center">
         <div className="flex flex-col items-center">
-          <Image src="/LumenLogo.svg" alt="Lumen Logo" width={96} height={96} priority />
+          <Image src="/CatecheoLogo.svg" alt="Catecheo Logo" width={96} height={96} priority />
           <p className="mt-2 text-sm font-medium text-blue-700 uppercase tracking-widest">
             St. Bartholomew the Apostle · Katy, TX
           </p>
-          <h1 className="mt-1 text-2xl font-bold text-lumen leading-snug">
+          <h1 className="mt-1 text-2xl font-bold text-catecheo leading-snug">
             OCIA / RICA Registration
           </h1>
         </div>
@@ -351,9 +351,9 @@ export default function RegisterPage() {
       <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="w-full max-w-md text-center space-y-4 bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
           <div className="flex justify-center">
-            <Image src="/LumenLogo.svg" alt="Lumen Logo" width={96} height={96} />
+            <Image src="/CatecheoLogo.svg" alt="Catecheo Logo" width={96} height={96} />
           </div>
-          <h2 className="text-xl font-bold text-lumen">{t.successTitle}</h2>
+          <h2 className="text-xl font-bold text-catecheo">{t.successTitle}</h2>
           <p className="text-sm text-gray-500">{t.successBody}</p>
           <p className="text-sm text-gray-500">{t.successChurch}</p>
         </div>
@@ -365,8 +365,8 @@ export default function RegisterPage() {
     <main className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center flex flex-col items-center">
-          <Image src="/LumenLogo.svg" alt="Lumen Logo" width={120} height={120} priority />
-          <h1 className="mt-1 text-2xl font-bold text-lumen">{t.title}</h1>
+          <Image src="/CatecheoLogo.svg" alt="Catecheo Logo" width={120} height={120} priority />
+          <h1 className="mt-1 text-2xl font-bold text-catecheo">{t.title}</h1>
           <p className="mt-1 text-sm text-gray-500">{t.subtitle}</p>
           <p className="mt-3 text-sm text-gray-600">{t.intro}</p>
           <button

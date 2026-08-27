@@ -47,7 +47,7 @@ export async function GET() {
   const totalSessions = rawSessions.length;
 
   const wb = new ExcelJS.Workbook();
-  wb.creator = "Lumen Catholic";
+  wb.creator = "Catecheo";
   wb.created = new Date();
 
   const ws = wb.addWorksheet("Attendance Summary");

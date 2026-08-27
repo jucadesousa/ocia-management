@@ -18,7 +18,7 @@ export default async function AuthLayout({
       </main>
       <Link
         href="/docs"
-        className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full bg-lumen text-white flex items-center justify-center text-lg font-bold shadow-lg hover:bg-lumen-dark transition-colors print:hidden"
+        className="fixed bottom-6 right-6 z-50 w-10 h-10 rounded-full bg-catecheo text-white flex items-center justify-center text-lg font-bold shadow-lg hover:bg-catecheo-dark transition-colors print:hidden"
         aria-label="Documentation"
       >
         ?
