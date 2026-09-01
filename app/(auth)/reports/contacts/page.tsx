@@ -52,6 +52,7 @@ export default async function ContactsReportPage({
       phone: true,
       phoneWork: true,
       email: true,
+      sponsorName: true,
       address: true,
       city: true,
       state: true,
@@ -77,6 +78,7 @@ export default async function ContactsReportPage({
     Phone: p.phone ?? "",
     "Work Phone": p.phoneWork ?? "",
     Email: p.email ?? "",
+    Sponsor: p.sponsorName ?? "",
   }));
 
   const activeGroup = params.group ?? "";
@@ -190,6 +192,11 @@ export default async function ContactsReportPage({
                         {p.email}
                       </a>
                     )}
+                    {p.sponsorName && (
+                      <p className="text-xs text-gray-500">
+                        Sponsor: <span className="text-gray-700">{p.sponsorName}</span>
+                      </p>
+                    )}
                   </div>
                 </li>
               ))}
@@ -213,6 +220,7 @@ export default async function ContactsReportPage({
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Phone</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Work Phone</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Sponsor</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -246,6 +254,7 @@ export default async function ContactsReportPage({
                     <td className="px-4 py-3 text-gray-600">
                       {p.email ? <a href={`mailto:${p.email}`} className="hover:text-blue-600">{p.email}</a> : <span className="text-gray-400">—</span>}
                     </td>
+                    <td className="px-4 py-3 text-gray-600">{p.sponsorName ?? <span className="text-gray-400">—</span>}</td>
                   </tr>
                 ))}
               </tbody>
