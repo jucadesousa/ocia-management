@@ -192,11 +192,12 @@ export default async function ContactsReportPage({
                         {p.email}
                       </a>
                     )}
-                    {p.sponsorName && (
-                      <p className="text-xs text-gray-500">
-                        Sponsor: <span className="text-gray-700">{p.sponsorName}</span>
-                      </p>
-                    )}
+                    <p className="text-xs text-gray-500">
+                      Sponsor:{" "}
+                      <span className="text-gray-700">
+                        {p.sponsorName ?? <span className="text-gray-400">—</span>}
+                      </span>
+                    </p>
                   </div>
                 </li>
               ))}
