@@ -20,11 +20,15 @@ const statusCellClass: Record<string, string> = {
 type SearchParams = Promise<{ group?: string }>;
 
 export default async function AttendanceReportPage({
-  searchParams: _searchParams,
+  searchParams,
 }: {
   searchParams: SearchParams;
 }) {
   await requireAuth();
+
+  const params = await searchParams;
+  const gridGroupFilter =
+    params.group === "ENGLISH" || params.group === "SPANISH" ? params.group : "";
 
   const cycle = await prisma.cycle.findFirst({ where: { isCurrent: true } });
 
@@ -124,7 +128,18 @@ export default async function AttendanceReportPage({
     return type === "WEEKLY" ? String(number) : `R${number}`;
   }
 
+  const gridParticipants = gridGroupFilter
+    ? participants.filter((p) => p.group === gridGroupFilter)
+    : participants;
 
+  function gridGroupTabClass(value: string) {
+    const isActive = value === gridGroupFilter;
+    return `text-xs px-3 py-1 rounded-lg font-medium transition-colors ${
+      isActive
+        ? "bg-blue-600 text-white"
+        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+    }`;
+  }
 
   // ── Shared summary table ───────────────────────────────────────────────────
 
@@ -207,8 +222,20 @@ export default async function AttendanceReportPage({
         </p>
       </div>
 
+      <nav className="no-print flex flex-wrap items-center gap-2">
+        <a href="#at-risk" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+          At-Risk Participants
+        </a>
+        <a href="#all-participants" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+          All Participants
+        </a>
+        <a href="#attendance-grid" className="text-xs px-3 py-1 rounded-lg font-medium bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors">
+          Attendance Grid
+        </a>
+      </nav>
+
       {/* Section 1 — At-Risk */}
-      <section>
+      <section id="at-risk" className="scroll-mt-16 md:scroll-mt-4">
         <div className={`rounded-xl border overflow-hidden ${atRiskRows.length > 0 ? "border-red-200" : "border-gray-200"}`}>
           <div className={`px-5 py-3 flex items-center justify-between border-b ${
             atRiskRows.length > 0 ? "bg-red-50 border-red-200" : "bg-gray-50 border-gray-200"
@@ -231,7 +258,7 @@ export default async function AttendanceReportPage({
       </section>
 
       {/* Section 2 — Summary table */}
-      <section>
+      <section id="all-participants" className="scroll-mt-16 md:scroll-mt-4">
         <div className="rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">All Participants</h2>
@@ -251,7 +278,7 @@ export default async function AttendanceReportPage({
       </section>
 
       {/* Section 3 — Pivot grid */}
-      <section>
+      <section id="attendance-grid" className="scroll-mt-16 md:scroll-mt-4">
         <div className="rounded-xl border border-gray-200 overflow-hidden">
           <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
             <div>
@@ -264,20 +291,34 @@ export default async function AttendanceReportPage({
               </p>
             </div>
             <a
-              href="/reports/attendance/grid-export"
+              href={`/reports/attendance/grid-export${gridGroupFilter ? `?group=${gridGroupFilter}` : ""}`}
               className="no-print text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
               Export to Excel
             </a>
           </div>
 
+          <div className="no-print px-5 py-2 border-b border-gray-100 flex items-center gap-2">
+            <Link href="/reports/attendance#attendance-grid" scroll={false} className={gridGroupTabClass("")}>
+              All
+            </Link>
+            <Link href="/reports/attendance?group=ENGLISH#attendance-grid" scroll={false} className={gridGroupTabClass("ENGLISH")}>
+              English
+            </Link>
+            <Link href="/reports/attendance?group=SPANISH#attendance-grid" scroll={false} className={gridGroupTabClass("SPANISH")}>
+              Spanish
+            </Link>
+          </div>
+
           {totalSessions === 0 ? (
             <div className="p-8 text-center text-gray-400 text-sm bg-white">
               No completed sessions yet.
             </div>
-          ) : participants.length === 0 ? (
+          ) : gridParticipants.length === 0 ? (
             <div className="p-8 text-center text-gray-400 text-sm bg-white">
-              No active participants found.
+              {participants.length === 0
+                ? "No active participants found."
+                : "No participants in this group."}
             </div>
           ) : (
             <div className="bg-white overflow-x-auto">
@@ -308,7 +349,7 @@ export default async function AttendanceReportPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {participants.map((p) => {
+                  {gridParticipants.map((p) => {
                     const rec = pivotMap[p.id];
                     const attended = sessions.filter(
                       (s) => rec[s.id] === "PRESENT"
@@ -356,7 +397,7 @@ export default async function AttendanceReportPage({
                     </td>
                     <td className="border-r border-gray-200" />
                     {sessions.map((s) => {
-                      const count = participants.filter((p) => {
+                      const count = gridParticipants.filter((p) => {
                         const status = pivotMap[p.id][s.id];
                         return status === "PRESENT";
                       }).length;

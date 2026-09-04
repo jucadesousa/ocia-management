@@ -31,8 +31,12 @@ function allBorders(): Partial<ExcelJS.Borders> {
   return { top: b, bottom: b, left: b, right: b };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   await requireAuth();
+
+  const { searchParams } = new URL(request.url);
+  const groupParam = searchParams.get("group");
+  const group = groupParam === "ENGLISH" || groupParam === "SPANISH" ? groupParam : undefined;
 
   const cycle = await prisma.cycle.findFirst({ where: { isCurrent: true } });
   if (!cycle) return NextResponse.json({ error: "No active cycle" }, { status: 404 });
@@ -45,7 +49,7 @@ export async function GET() {
       orderBy: [{ type: "asc" }, { number: "asc" }],
     }),
     prisma.participant.findMany({
-      where: { cycleId: cycle.id, status: "ACTIVE" },
+      where: { cycleId: cycle.id, status: "ACTIVE", ...(group ? { group } : {}) },
       include: {
         attendanceRecords: {
           where: { session: { status: "COMPLETED" } },
@@ -260,10 +264,12 @@ export async function GET() {
 
   const buffer = await wb.xlsx.writeBuffer();
 
+  const filename = group ? `attendance-grid-${group.toLowerCase()}.xlsx` : "attendance-grid.xlsx";
+
   return new NextResponse(buffer, {
     headers: {
       "Content-Type":        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": `attachment; filename="attendance-grid.xlsx"`,
+      "Content-Disposition": `attachment; filename="${filename}"`,
     },
   });
 }
