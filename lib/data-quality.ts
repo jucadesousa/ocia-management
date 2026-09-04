@@ -1,8 +1,11 @@
-// Flags internal inconsistencies between fields that should agree with each
-// other — signs of a data-entry slip rather than a pastoral concern. Unlike
-// canonical-status.ts, a participant can carry more than one issue at once,
-// and the list is self-healing: fixing the field removes the flag on the
-// next read, with no persisted review state.
+// Flags data that's missing or internally inconsistent — signs of a
+// data-entry slip or an incomplete intake rather than a pastoral concern.
+// This is distinct from the Ministry Overview "Missing Documents" check,
+// which tracks proof (e.g. a baptism certificate) for facts we already know;
+// this file tracks whether we know the fact at all. Unlike canonical-status.ts,
+// a participant can carry more than one issue at once, and the list is
+// self-healing: fixing the field removes the flag on the next read, with no
+// persisted review state.
 
 export type DataQualityIssue = {
   ruleId: string;
@@ -31,6 +34,23 @@ export function evaluateDataQualityIssues(
   rec: RecordFields | null
 ): DataQualityIssue[] {
   const issues: DataQualityIssue[] = [];
+
+  if (!rec || rec.isBaptized === null) {
+    issues.push({
+      ruleId: "baptism-status-unknown",
+      label: "Baptism status unknown",
+      detail: "Whether this participant has been baptized has not been recorded.",
+    });
+  }
+
+  if (!participant.maritalStatus) {
+    issues.push({
+      ruleId: "marital-status-unknown",
+      label: "Marital status unknown",
+      detail: "Marital or cohabitation status has not been recorded for this participant.",
+    });
+  }
+
   if (!rec) return issues;
 
   if (

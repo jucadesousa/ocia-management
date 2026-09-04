@@ -140,10 +140,11 @@ export default async function DataQualityReportPage({
       </div>
 
       <p className="text-sm text-gray-500 max-w-3xl">
-        Active participants whose record has an internal inconsistency —
-        fields that should agree with each other but don&apos;t. Fixing the
-        underlying field on the participant&apos;s profile removes it from this
-        list automatically.
+        Active participants who are missing a core fact — baptism or
+        marital/cohabitation status — or whose record has an internal
+        inconsistency, such as fields that should agree with each other but
+        don&apos;t. Fixing the underlying field on the participant&apos;s
+        profile removes it from this list automatically.
       </p>
 
       {rows.length > 0 && (
@@ -163,8 +164,8 @@ export default async function DataQualityReportPage({
       {filteredRows.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-400 text-sm">
           {rows.length === 0
-            ? "No inconsistencies detected among active participants."
-            : "No inconsistencies for this group."}
+            ? "No data quality issues detected among active participants."
+            : "No data quality issues for this group."}
         </div>
       ) : (
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">

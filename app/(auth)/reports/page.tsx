@@ -69,7 +69,7 @@ export default async function ReportsPage() {
             href: "/reports/data-quality",
             title: "Data Quality",
             description:
-              "Active participants whose record has an internal inconsistency, such as a marital status that doesn't match the sacramental record.",
+              "Active participants missing a core fact — baptism or marital/cohabitation status — or with an internal inconsistency, such as a marital status that doesn't match the sacramental record.",
             badge: "Excel export",
             icon: AlertTriangle,
           },
