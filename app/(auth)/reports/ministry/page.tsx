@@ -345,13 +345,13 @@ export default async function MinistryOverviewPage({
 
           {missingRows.length > 0 && (
             <div className="no-print px-5 py-2 border-b border-gray-100 flex items-center gap-2">
-              <Link href="/reports/ministry" className={missingGroupTabClass("")}>
+              <Link href="/reports/ministry#missing-documents" className={missingGroupTabClass("")}>
                 All
               </Link>
-              <Link href="/reports/ministry?missingGroup=ENGLISH" className={missingGroupTabClass("English")}>
+              <Link href="/reports/ministry?missingGroup=ENGLISH#missing-documents" className={missingGroupTabClass("English")}>
                 English
               </Link>
-              <Link href="/reports/ministry?missingGroup=SPANISH" className={missingGroupTabClass("Spanish")}>
+              <Link href="/reports/ministry?missingGroup=SPANISH#missing-documents" className={missingGroupTabClass("Spanish")}>
                 Spanish
               </Link>
             </div>
@@ -493,13 +493,13 @@ export default async function MinistryOverviewPage({
 
             {canonicalRows.length > 0 && (
               <div className="no-print px-5 py-2 border-b border-gray-100 flex items-center gap-2">
-                <Link href="/reports/ministry?canonicalFilter=open" className={canonicalFilterTabClass("open")}>
+                <Link href="/reports/ministry?canonicalFilter=open#canonical-status-review" className={canonicalFilterTabClass("open")}>
                   Open
                 </Link>
-                <Link href="/reports/ministry?canonicalFilter=all" className={canonicalFilterTabClass("all")}>
+                <Link href="/reports/ministry?canonicalFilter=all#canonical-status-review" className={canonicalFilterTabClass("all")}>
                   All
                 </Link>
-                <Link href="/reports/ministry?canonicalFilter=resolved" className={canonicalFilterTabClass("resolved")}>
+                <Link href="/reports/ministry?canonicalFilter=resolved#canonical-status-review" className={canonicalFilterTabClass("resolved")}>
                   Resolved
                 </Link>
               </div>
