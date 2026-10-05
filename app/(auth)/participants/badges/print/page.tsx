@@ -124,7 +124,8 @@ export default async function BadgePrintPage() {
           align-items: center;
           justify-content: center;
           gap: 4px;
-          padding: 0 8px;
+          /* Side padding keeps names clear of the Guadalupe image on the right (~84–98% of width) */
+          padding: 0 0.6in;
         }
 
         .badge-photo {
@@ -222,7 +223,7 @@ export default async function BadgePrintPage() {
                 <span className="cut-h bl-h" /><span className="cut-v bl-v" />
                 <span className="cut-h br-h" /><span className="cut-v br-v" />
                 <div className="badge">
-                  <div className={`badge-content${`${p.firstName} ${p.lastName}`.length > 20 ? " long" : ""}`}>
+                  <div className={`badge-content${`${p.firstName} ${p.lastName}`.length > 16 ? " long" : ""}`}>
                     <img src={p.photoUrl!} alt={p.fullName} className="badge-photo" />
                     <span className="badge-name">{p.firstName} {p.lastName}</span>
                   </div>
