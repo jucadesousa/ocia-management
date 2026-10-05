@@ -162,7 +162,9 @@ export function UsersTab({
                   </div>
 
                   {u.id !== currentUserId ? (
-                    <form action={updateUserRole.bind(null, u.id)} className="shrink-0">
+                    <form key={u.role} action={updateUserRole.bind(null, u.id)} className="shrink-0">
+                      {/* Keyed on role: React resets the form after the action, which would snap an
+                          uncontrolled <select> back to its original default; remounting picks up the new role */}
                       <select
                         name="role"
                         defaultValue={u.role}
