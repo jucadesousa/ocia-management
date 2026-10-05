@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { Users } from "lucide-react";
+import { Users, List, LayoutGrid } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { deriveOciaLabel, ociaProfileWhere } from "@/lib/ocia-stage";
@@ -44,6 +44,7 @@ type SearchParams = Promise<{
   stage?: string;
   status?: string;
   page?: string;
+  view?: string;
 }>;
 
 export default async function ParticipantsPage({ searchParams }: { searchParams: SearchParams }) {
@@ -52,6 +53,7 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.page ?? "1", 10));
   const search = params.search?.trim() ?? "";
+  const view = params.view === "grid" ? "grid" : "list";
 
   const cycle = await prisma.cycle.findFirst({ where: { isCurrent: true } });
 
@@ -115,7 +117,18 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
     if (params.group) sp.set("group", params.group);
     if (params.stage) sp.set("stage", params.stage);
     if (params.status) sp.set("status", params.status);
+    if (view === "grid") sp.set("view", view);
     sp.set("page", String(p));
+    return `/participants?${sp.toString()}`;
+  };
+
+  const buildViewUrl = (v: "list" | "grid") => {
+    const sp = new URLSearchParams();
+    if (search) sp.set("search", search);
+    if (params.group) sp.set("group", params.group);
+    if (params.stage) sp.set("stage", params.stage);
+    if (params.status) sp.set("status", params.status);
+    if (v === "grid") sp.set("view", v);
     return `/participants?${sp.toString()}`;
   };
 
@@ -139,18 +152,95 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
         </Link>
       </div>
 
-      <Suspense>
-        <ParticipantFilters />
-      </Suspense>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <Suspense>
+          <ParticipantFilters />
+        </Suspense>
+        <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1 shrink-0">
+          <Link
+            href={buildViewUrl("list")}
+            aria-label="List view"
+            aria-current={view === "list"}
+            className={`p-1.5 rounded-md transition-colors ${
+              view === "list" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <List size={16} />
+          </Link>
+          <Link
+            href={buildViewUrl("grid")}
+            aria-label="Grid view"
+            aria-current={view === "grid"}
+            className={`p-1.5 rounded-md transition-colors ${
+              view === "grid" ? "bg-white shadow-sm text-blue-600" : "text-gray-500 hover:text-gray-700"
+            }`}
+          >
+            <LayoutGrid size={16} />
+          </Link>
+        </div>
+      </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {participants.length === 0 ? (
-          <div className="p-12 text-center">
-            <Users className="mx-auto mb-3 text-gray-300" size={40} />
-            <p className="text-sm font-medium text-gray-400">No participants found</p>
-            <p className="text-xs text-gray-400 mt-1">Try adjusting your filters.</p>
-          </div>
-        ) : (
+      {participants.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <Users className="mx-auto mb-3 text-gray-300" size={40} />
+          <p className="text-sm font-medium text-gray-400">No participants found</p>
+          <p className="text-xs text-gray-400 mt-1">Try adjusting your filters.</p>
+        </div>
+      ) : view === "grid" ? (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {participants.map((p) => {
+            const attended = p.attendanceRecords.length;
+            const pct = completedSessions > 0
+              ? Math.round((attended / completedSessions) * 100)
+              : null;
+            const atRisk = pct !== null && pct < cycle.atRiskThresholdPercent;
+            const ol = deriveOciaLabel(p.sacramentalRecord);
+
+            return (
+              <Link
+                key={p.id}
+                href={`/participants/${p.id}`}
+                className="bg-white rounded-xl border border-gray-200 p-4 flex flex-col items-center gap-2 text-center hover:border-blue-300 hover:shadow-md transition-all"
+              >
+                {p.photoUrl ? (
+                  <img
+                    src={p.photoUrl}
+                    alt={p.fullName}
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border border-gray-200"
+                  />
+                ) : (
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-blue-100 flex items-center justify-center text-xl font-semibold text-blue-700 select-none">
+                    {initials(p.fullName)}
+                  </div>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-gray-900">{p.fullName}</p>
+                  {p.preferredName && (
+                    <p className="text-xs text-gray-400">({p.preferredName})</p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 flex-wrap justify-center">
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${stageBadge[p.ociaStage]}`}>
+                    {stageLabel[p.ociaStage]}
+                  </span>
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${ol.color}`}>
+                    {ol.label}
+                  </span>
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${statusBadge[p.status]}`}>
+                    {p.status.charAt(0) + p.status.slice(1).toLowerCase()}
+                  </span>
+                </div>
+                {pct !== null && (
+                  <span className={`text-xs font-semibold ${atRisk ? "text-red-600" : "text-gray-500"}`}>
+                    {pct}% attendance{atRisk && " ⚠"}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <>
             {/* Mobile card list */}
             <ul className="md:hidden divide-y divide-gray-100">
@@ -296,8 +386,8 @@ export default async function ParticipantsPage({ searchParams }: { searchParams:
             </tbody>
           </table>
           </>
-        )}
-      </div>
+        </div>
+      )}
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-gray-500">
