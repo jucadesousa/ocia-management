@@ -114,27 +114,32 @@ export default async function TeamBadgePrintPage() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 4px;
+          gap: 3px;
           padding: 0 8px;
         }
 
         .badge-photo {
-          width: 0.7in;
-          height: 0.7in;
+          width: 0.64in;
+          height: 0.64in;
           border-radius: 50%;
           object-fit: cover;
           border: 1.5px solid #d4a843;
         }
 
+        /* Heavy sans-serif so names are readable across a discussion table */
         .badge-name {
-          font-family: Georgia, 'Times New Roman', serif;
-          font-size: 11.5pt;
+          font-family: Tahoma, Verdana, sans-serif;
+          font-size: 16pt;
           font-weight: bold;
           text-align: center;
-          color: #3b1f0a;
-          line-height: 1.15;
+          color: #1f1005;
+          line-height: 1.05;
+          letter-spacing: 0.2px;
+          text-wrap: balance;
           max-width: 100%;
         }
+        /* Long names wrap to two lines — shrink the photo so they stay in the white area */
+        .badge-content.long .badge-photo { width: 0.55in; height: 0.55in; }
 
         .badge-tag {
           font-family: Arial, Helvetica, sans-serif;
@@ -216,7 +221,7 @@ export default async function TeamBadgePrintPage() {
                 <span className="cut-h bl-h" /><span className="cut-v bl-v" />
                 <span className="cut-h br-h" /><span className="cut-v br-v" />
                 <div className="badge">
-                  <div className="badge-content">
+                  <div className={`badge-content${m.name.length > 20 ? " long" : ""}`}>
                     <img src={m.photoUrl!} alt={m.name} className="badge-photo" />
                     <span className="badge-name">{m.name}</span>
                     <span className="badge-tag">Team Member</span>
