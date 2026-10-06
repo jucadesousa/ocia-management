@@ -1,5 +1,7 @@
 // Flags OCIA participants whose marital situation may be canonically
 // irregular, based on the sacramental fields already captured for them.
+// Marital status comes from the participant profile (the single source of
+// truth); the remaining marriage details live on the sacramental record.
 // Tiers are ordered by severity; only the highest-severity match is returned.
 
 export type CanonicalFlag = {
@@ -9,7 +11,6 @@ export type CanonicalFlag = {
 };
 
 type MarriageFields = {
-  marriageStatus: string | null;
   marriedToCatholic: boolean | null;
   marriedByCatholicPriest: boolean | null;
   hadPriorMarriage: boolean | null;
@@ -18,9 +19,10 @@ type MarriageFields = {
 };
 
 export function evaluateCanonicalFlag(
+  maritalStatus: string | null,
   rec: MarriageFields | null
 ): CanonicalFlag | null {
-  if (!rec || rec.marriageStatus !== "Married") return null;
+  if (!rec || maritalStatus !== "Married") return null;
 
   const priorBondUnresolved =
     (rec.hadPriorMarriage === true || rec.spouseHadPriorMarriage === true) &&

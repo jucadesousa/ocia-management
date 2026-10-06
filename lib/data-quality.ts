@@ -15,10 +15,10 @@ export type DataQualityIssue = {
 
 type ParticipantFields = {
   maritalStatus: string | null;
+  spouseName: string | null;
 };
 
 type RecordFields = {
-  marriageStatus: string | null;
   marriedToCatholic: boolean | null;
   marriedByCatholicPriest: boolean | null;
   hadPriorMarriage: boolean | null;
@@ -51,29 +51,25 @@ export function evaluateDataQualityIssues(
     });
   }
 
+  if (participant.maritalStatus === "Single" && participant.spouseName?.trim()) {
+    issues.push({
+      ruleId: "spouse-name-while-single",
+      label: "Spouse name while single",
+      detail: `Marital status is "Single", but a spouse name ("${participant.spouseName.trim()}") is recorded.`,
+    });
+  }
+
   if (!rec) return issues;
 
   if (
     participant.maritalStatus &&
-    rec.marriageStatus &&
-    participant.maritalStatus !== rec.marriageStatus
-  ) {
-    issues.push({
-      ruleId: "marital-status-mismatch",
-      label: "Marital status mismatch",
-      detail: `Participant record says "${participant.maritalStatus}"; sacramental record says "${rec.marriageStatus}".`,
-    });
-  }
-
-  if (
-    rec.marriageStatus &&
-    rec.marriageStatus !== "Married" &&
+    participant.maritalStatus !== "Married" &&
     (rec.marriedToCatholic !== null || rec.marriedByCatholicPriest !== null)
   ) {
     issues.push({
       ruleId: "marriage-detail-without-married-status",
       label: `Marriage details without "Married" status`,
-      detail: `Marriage status is "${rec.marriageStatus}", but marriage-to-a-Catholic details are filled in.`,
+      detail: `Marital status is "${participant.maritalStatus}", but marriage-to-a-Catholic details are filled in.`,
     });
   }
 
@@ -104,7 +100,7 @@ export function evaluateDataQualityIssues(
     });
   }
 
-  if (rec.marriageCertReceived && rec.marriageStatus === "Single") {
+  if (rec.marriageCertReceived && participant.maritalStatus === "Single") {
     issues.push({
       ruleId: "marriage-cert-without-marriage",
       label: "Marriage certificate without a marriage",

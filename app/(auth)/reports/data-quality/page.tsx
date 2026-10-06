@@ -45,9 +45,9 @@ export default async function DataQualityReportPage({
       email: true,
       group: true,
       maritalStatus: true,
+      spouseName: true,
       sacramentalRecord: {
         select: {
-          marriageStatus: true,
           marriedToCatholic: true,
           marriedByCatholicPriest: true,
           hadPriorMarriage: true,
@@ -74,7 +74,10 @@ export default async function DataQualityReportPage({
 
   const rows: Row[] = [];
   for (const p of participants) {
-    const issues = evaluateDataQualityIssues({ maritalStatus: p.maritalStatus }, p.sacramentalRecord);
+    const issues = evaluateDataQualityIssues(
+      { maritalStatus: p.maritalStatus, spouseName: p.spouseName },
+      p.sacramentalRecord
+    );
     if (issues.length === 0) continue;
     rows.push({
       id: p.id,

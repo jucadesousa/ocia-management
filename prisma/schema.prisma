@@ -181,7 +181,7 @@ model SacramentalRecord {
   hasFirstCommunion     Boolean?
   hasConfirmation       Boolean?
   // Marriage / family status
-  marriageStatus        String?     // Single, Married, Separated, Divorced, Widowed
+  marriageStatus        String?     // DEPRECATED — no longer read or written; Participant.maritalStatus is the source of truth. Drop in a later migration.
   marriedToCatholic     Boolean?
   marriedByCatholicPriest Boolean?
   hadPriorMarriage      Boolean?

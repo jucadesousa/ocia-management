@@ -34,7 +34,6 @@ export default async function SacramentalEditPage({ params }: Props) {
         baptismProofStatus: sr.baptismProofStatus,
         hasFirstCommunion: sr.hasFirstCommunion,
         hasConfirmation: sr.hasConfirmation,
-        marriageStatus: sr.marriageStatus,
         marriedToCatholic: sr.marriedToCatholic,
         marriedByCatholicPriest: sr.marriedByCatholicPriest,
         hadPriorMarriage: sr.hadPriorMarriage,
@@ -73,7 +72,7 @@ export default async function SacramentalEditPage({ params }: Props) {
       <h1 className="text-2xl font-bold text-gray-900 mb-6">
         Edit Sacramental Record
       </h1>
-      <SacramentalForm participantId={id} defaults={defaults} />
+      <SacramentalForm participantId={id} maritalStatus={participant.maritalStatus} defaults={defaults} />
     </div>
   );
 }

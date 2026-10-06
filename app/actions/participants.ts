@@ -220,7 +220,6 @@ export async function registerParticipant(
         isBaptized,
         baptismType,
         baptismDenomination,
-        marriageStatus: maritalStatus,
         marriedToCatholic,
         marriedByCatholicPriest,
         hadPriorMarriage,

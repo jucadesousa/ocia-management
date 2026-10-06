@@ -48,7 +48,6 @@ export default async function MinistryOverviewPage({
           electionDate: true,
           easterVigilDate: true,
           completedAt: true,
-          marriageStatus: true,
           marriedToCatholic: true,
           marriedByCatholicPriest: true,
           hadPriorMarriage: true,
@@ -165,7 +164,7 @@ export default async function MinistryOverviewPage({
 
   if (user.role === "ADMIN") {
     for (const p of activeParticipants) {
-      const flag = evaluateCanonicalFlag(p.sacramentalRecord);
+      const flag = evaluateCanonicalFlag(p.maritalStatus, p.sacramentalRecord);
       if (!flag) continue;
       canonicalRows.push({
         id: p.id,

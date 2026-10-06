@@ -275,7 +275,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
 
               <SectionTitle title="Marriage" />
               <dl className="px-4">
-                <DetailRow label="Marriage status" value={sr.marriageStatus} />
+                <DetailRow label="Marital status" value={participant.maritalStatus} />
                 <BoolRow label="Married to a Catholic" value={sr.marriedToCatholic} />
                 <BoolRow label="Married by a Catholic priest" value={sr.marriedByCatholicPriest} />
                 <BoolRow label="Had a prior marriage" value={sr.hadPriorMarriage} />

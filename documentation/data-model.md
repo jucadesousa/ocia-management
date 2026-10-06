@@ -254,9 +254,11 @@ A one-to-one extension of Participant tracking sacramental history and OCIA mile
 |---|---|
 | Baptism | `isBaptized`, `baptismDenomination`, `baptismDate`, `baptismParish`, `baptismProofStatus` |
 | Sacraments | `hasFirstCommunion`, `hasConfirmation` |
-| Marriage | `marriageStatus`, `marriedToCatholic`, `marriedByCatholicPriest`, `hadPriorMarriage`, `annulmentStatus`, `marriageCertReceived`, `canonicalReviewStatus` |
+| Marriage | `marriedToCatholic`, `marriedByCatholicPriest`, `hadPriorMarriage`, `annulmentStatus`, `marriageCertReceived`, `canonicalReviewStatus` |
 | Children | `hasChildren`, `childrenNotes` |
 | OCIA Milestones | `riteOfAcceptanceDate`, `electionDate`, `easterVigilDate`, `completedAt` |
+
+> Marital status lives only on **Participant** (`maritalStatus`). The sacramental form shows it read-only and the canonical status check reads it from there. The old `SacramentalRecord.marriageStatus` column is deprecated (no longer read or written) and is scheduled to be dropped.
 
 > The `ociaStage` field on **Participant** is the manual stage tracker. The **SacramentalRecord** feeds the computed **OCIA Profile** (see above) — *what sacraments they've received and when* — which is what most views now show instead.
 

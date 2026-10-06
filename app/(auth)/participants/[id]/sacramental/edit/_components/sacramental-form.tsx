@@ -13,7 +13,6 @@ type Defaults = {
   baptismProofStatus: string;
   hasFirstCommunion: boolean | null;
   hasConfirmation: boolean | null;
-  marriageStatus: string | null;
   marriedToCatholic: boolean | null;
   marriedByCatholicPriest: boolean | null;
   hadPriorMarriage: boolean | null;
@@ -104,9 +103,11 @@ function Field({
 
 export function SacramentalForm({
   participantId,
+  maritalStatus,
   defaults,
 }: {
   participantId: string;
+  maritalStatus: string | null;
   defaults: Defaults | null;
 }) {
   const d = defaults;
@@ -170,20 +171,13 @@ export function SacramentalForm({
       <div className="bg-white rounded-xl border border-gray-200 p-5">
         <h2 className={headingCls}>Marriage</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Read-only: marital status lives on the participant profile so it has one source of truth */}
           <div>
-            <label className={labelCls}>Marriage status</label>
-            <select
-              name="marriageStatus"
-              defaultValue={d?.marriageStatus ?? ""}
-              className={inputCls}
-            >
-              <option value="">—</option>
-              <option value="Single">Single</option>
-              <option value="Married">Married</option>
-              <option value="Separated">Separated</option>
-              <option value="Divorced">Divorced</option>
-              <option value="Widowed">Widowed</option>
-            </select>
+            <span className={labelCls}>Marital status</span>
+            <p className="py-2 text-sm text-gray-900">{maritalStatus ?? "—"}</p>
+            <Link href={`/participants/${participantId}/edit`} className="text-xs text-blue-600 hover:text-blue-800">
+              Edit on profile
+            </Link>
           </div>
           <NullableBoolSelect name="marriedToCatholic" label="Married to a Catholic?" value={d?.marriedToCatholic ?? null} />
           <NullableBoolSelect name="marriedByCatholicPriest" label="Married by a Catholic priest?" value={d?.marriedByCatholicPriest ?? null} />

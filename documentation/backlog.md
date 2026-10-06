@@ -58,6 +58,18 @@ Items discussed but not yet implemented. Prioritize before picking up.
 
 ---
 
+## Drop Deprecated `SacramentalRecord.marriageStatus` Column (Tech Debt)
+
+**Context:** Marital status used to be stored twice — `Participant.maritalStatus` (profile) and `SacramentalRecord.marriageStatus` (sacramental record) — and edits to one never reached the other. `Participant.maritalStatus` is now the single source of truth: the canonical status check and Data Quality rules read it, the sacramental form shows it read-only, and neither the sacramental form nor public registration writes `marriageStatus` anymore.
+
+**What's left:** once the change has been on production for a while, drop the column with a hand-written migration (`prisma migrate deploy`, not `migrate dev`).
+
+**Files likely affected:**
+- `prisma/schema.prisma` — remove `marriageStatus` from `SacramentalRecord`
+- `prisma/migrations/` — new migration with `ALTER TABLE "SacramentalRecord" DROP COLUMN "marriageStatus";`
+
+---
+
 ## Sponsor Management
 
 **Context:** The registration form captures a sponsor name (`sponsorName` text field on `Participant`), but there is no dedicated view to manage sponsors or see which participants have one assigned and which don't. Coordinators currently have no way to get a quick list of participants without a sponsor so they can follow up.
