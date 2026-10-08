@@ -152,6 +152,11 @@ export default async function BadgePrintPage() {
         .badge-content.long .badge-photo { width: 0.55in; height: 0.55in; }
 
         /* ── Print styles ───────────────────────────────────── */
+        /* Zero page margins: the sheet itself carries the 0.8in / 0.65in margins.
+           Without this, browser default margins shrink the printable height below
+           11in and the bottom of each sheet spills onto a blank extra page. */
+        @page { size: letter; margin: 0; }
+
         @media print {
           /* Reset layout overflow so all pages reach the printer */
           html, body, body > div, main {
@@ -165,6 +170,9 @@ export default async function BadgePrintPage() {
 
           .badge-sheet {
             margin: 0;
+            height: 11in;
+            min-height: 0;
+            overflow: hidden;
             padding: 0.8in 0.65in;
             page-break-after: always;
             break-after: page;

@@ -152,6 +152,11 @@ export default async function TeamBadgePrintPage() {
         }
 
         /* ── Print styles ───────────────────────────────────── */
+        /* Zero page margins: the sheet itself carries the 0.8in / 0.65in margins.
+           Without this, browser default margins shrink the printable height below
+           11in and the bottom of each sheet spills onto a blank extra page. */
+        @page { size: letter; margin: 0; }
+
         @media print {
           html, body, body > div, main {
             overflow: visible !important;
@@ -164,6 +169,9 @@ export default async function TeamBadgePrintPage() {
 
           .badge-sheet {
             margin: 0;
+            height: 11in;
+            min-height: 0;
+            overflow: hidden;
             padding: 0.8in 0.65in;
             page-break-after: always;
             break-after: page;
