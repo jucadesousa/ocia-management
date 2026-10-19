@@ -44,7 +44,9 @@ export function HelpButton() {
           setDismissed(true);
         }}
         aria-label="Hide documentation shortcut"
-        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-700 text-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-gray-900 transition-opacity"
+        // Touch screens have no hover, so the close button is always visible
+        // (and a bit larger for fingers) on devices without a hover-capable pointer.
+        className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-gray-700 text-white flex items-center justify-center shadow opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-gray-900 transition-opacity [@media(hover:none)]:opacity-100 [@media(hover:none)]:w-6 [@media(hover:none)]:h-6 [@media(hover:none)]:-top-2 [@media(hover:none)]:-right-2"
       >
         <X size={12} />
       </button>
