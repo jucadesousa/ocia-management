@@ -412,7 +412,9 @@ function BadgesTab() {
       <Section title="Printing workflow">
         <UL>
           <LI>Go to <strong>Badges</strong> in the sidebar. The page shows participants with photos who have not yet been printed.</LI>
-          <LI>Review the list and deselect any participants you do not want to print in this batch.</LI>
+          <LI>Use the <em>All</em> / <em>English</em> / <em>Spanish</em> tabs to look at each group separately — handy for following up on missing photos. The number in parentheses on each tab is the count of participants who <strong>don't have a printed badge yet</strong>: those ready to print (in <em>Not yet printed</em>) plus those still waiting on a photo (in <em>Missing photo</em>). For example, 1 ready to print and 8 missing photos shows as <em>Spanish (9)</em>. Already-printed badges are not counted.</LI>
+          <LI>The print button follows the selected tab: on <em>All</em> it prints every unprinted badge together; on <em>English</em> or <em>Spanish</em> it prints only that group.</LI>
+          <LI>Use <em>Mark as printed</em> on any participant you do not want in this batch.</LI>
           <LI>Click <em>Print badges</em>. The print preview will open with all selected participants laid out across as many sheets as needed.</LI>
           <LI>Send to printer. Cut marks appear at each badge corner to guide trimming.</LI>
           <LI>After printing, click <em>Mark all as printed &amp; go back</em>. Those participants will move out of the unprinted queue.</LI>

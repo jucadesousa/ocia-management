@@ -1,13 +1,20 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import type { Group } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { deriveOciaLabel } from "@/lib/ocia-stage";
 import { toggleBadgePrinted } from "@/app/actions/participants";
 
-export default async function BadgesPage() {
+type SearchParams = Promise<{ group?: string }>;
+
+export default async function BadgesPage({ searchParams }: { searchParams: SearchParams }) {
   const user = await requireAuth();
   if (user.role !== "ADMIN") notFound();
+  const params = await searchParams;
+
+  const activeGroup =
+    params.group === "ENGLISH" || params.group === "SPANISH" ? (params.group as Group) : null;
 
   const cycle = await prisma.cycle.findFirst({ where: { isCurrent: true } });
   if (!cycle) return <div className="p-6 text-gray-500">No active cycle found.</div>;
@@ -22,10 +29,35 @@ export default async function BadgesPage() {
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
   });
 
-  const participants  = allParticipants.filter((p) => p.photoUrl);
-  const noPhoto       = allParticipants.filter((p) => !p.photoUrl);
+  // Counts per language for the filter tabs (badges still to print + missing photos)
+  const needsAttention = allParticipants.filter((p) => !p.photoUrl || !p.badgePrinted);
+  const tabCounts = {
+    "":      needsAttention.length,
+    ENGLISH: needsAttention.filter((p) => p.group === "ENGLISH").length,
+    SPANISH: needsAttention.filter((p) => p.group === "SPANISH").length,
+  };
+
+  const visible       = activeGroup ? allParticipants.filter((p) => p.group === activeGroup) : allParticipants;
+  const participants  = visible.filter((p) => p.photoUrl);
+  const noPhoto       = visible.filter((p) => !p.photoUrl);
   const unprinted     = participants.filter((p) => !p.badgePrinted);
   const printed       = participants.filter((p) => p.badgePrinted);
+
+  const printHref = activeGroup ? `/participants/badges/print?group=${activeGroup}` : "/participants/badges/print";
+  const groupLabel = activeGroup === "ENGLISH" ? "English" : activeGroup === "SPANISH" ? "Spanish" : null;
+
+  function filterTabClass(value: string) {
+    const isActive = value === (activeGroup ?? "");
+    return `text-sm px-3 py-1.5 rounded-lg font-medium transition-colors ${
+      isActive
+        ? "bg-blue-600 text-white"
+        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+    }`;
+  }
+
+  function GroupTag({ group }: { group: Group }) {
+    return <span className="ml-2 text-xs text-gray-400">{group === "ENGLISH" ? "EN" : "ES"}</span>;
+  }
 
   function ParticipantRow({
     p,
@@ -43,7 +75,7 @@ export default async function BadgesPage() {
           className="w-10 h-10 rounded-full object-cover shrink-0 border border-gray-200"
         />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900">{p.firstName} {p.lastName}</p>
+          <p className="text-sm font-medium text-gray-900">{p.firstName} {p.lastName}<GroupTag group={p.group} /></p>
           <span className={`inline-flex mt-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium ${ociaLabel.color}`}>
             {ociaLabel.label}
           </span>
@@ -75,13 +107,29 @@ export default async function BadgesPage() {
         </div>
         {unprinted.length > 0 && (
           <Link
-            href="/participants/badges/print"
+            href={printHref}
             className="shrink-0 bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Print {unprinted.length} badge{unprinted.length !== 1 ? "s" : ""}
+            Print {unprinted.length} {groupLabel ? `${groupLabel} ` : ""}badge{unprinted.length !== 1 ? "s" : ""}
           </Link>
         )}
       </div>
+
+      {/* Language filter tabs — counts are participants still needing a badge or photo */}
+      <div className="flex items-center gap-2">
+        <Link href="/participants/badges" className={filterTabClass("")}>
+          All <span className="opacity-70">({tabCounts[""]})</span>
+        </Link>
+        <Link href="/participants/badges?group=ENGLISH" className={filterTabClass("ENGLISH")}>
+          English <span className="opacity-70">({tabCounts.ENGLISH})</span>
+        </Link>
+        <Link href="/participants/badges?group=SPANISH" className={filterTabClass("SPANISH")}>
+          Spanish <span className="opacity-70">({tabCounts.SPANISH})</span>
+        </Link>
+      </div>
+      <p className="-mt-4 text-xs text-gray-500">
+        Numbers in parentheses count participants without a printed badge yet — those waiting to print plus those still missing a photo.
+      </p>
 
       {/* Not yet printed */}
       <section>
@@ -139,7 +187,7 @@ export default async function BadgesPage() {
                       <span className="text-orange-400 text-lg">?</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{p.firstName} {p.lastName}</p>
+                      <p className="text-sm font-medium text-gray-900">{p.firstName} {p.lastName}<GroupTag group={p.group} /></p>
                       <span className={`inline-flex mt-0.5 px-1.5 py-0.5 rounded-full text-xs font-medium ${ociaLabel.color}`}>
                         {ociaLabel.label}
                       </span>

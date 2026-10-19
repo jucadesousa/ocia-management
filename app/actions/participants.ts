@@ -273,7 +273,12 @@ export async function markAllBadgesPrinted(formData: FormData): Promise<void> {
   const user = await requireAuth();
   if (user.role !== "ADMIN") return;
   const ids = (formData.get("participantIds") as string).split(",").filter(Boolean);
+  const group = formData.get("group");
   await prisma.participant.updateMany({ where: { id: { in: ids } }, data: { badgePrinted: true } });
   revalidatePath("/participants/badges");
-  redirect("/participants/badges");
+  redirect(
+    group === "ENGLISH" || group === "SPANISH"
+      ? `/participants/badges?group=${group}`
+      : "/participants/badges"
+  );
 }

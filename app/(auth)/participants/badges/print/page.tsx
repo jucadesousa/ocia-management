@@ -1,23 +1,37 @@
 import { notFound, redirect } from "next/navigation";
+import type { Group } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/dal";
 import { markAllBadgesPrinted } from "@/app/actions/participants";
 import { PrintTrigger } from "./_components/print-trigger";
 import { Breadcrumb } from "@/components/breadcrumb";
 
-export default async function BadgePrintPage() {
+type SearchParams = Promise<{ group?: string }>;
+
+export default async function BadgePrintPage({ searchParams }: { searchParams: SearchParams }) {
   const user = await requireAuth();
   if (user.role !== "ADMIN") notFound();
+  const params = await searchParams;
+
+  const activeGroup =
+    params.group === "ENGLISH" || params.group === "SPANISH" ? (params.group as Group) : null;
+  const backHref = activeGroup ? `/participants/badges?group=${activeGroup}` : "/participants/badges";
 
   const cycle = await prisma.cycle.findFirst({ where: { isCurrent: true } });
-  if (!cycle) redirect("/participants/badges");
+  if (!cycle) redirect(backHref);
 
   const participants = await prisma.participant.findMany({
-    where: { cycleId: cycle.id, status: "ACTIVE", photoUrl: { not: null }, badgePrinted: false },
+    where: {
+      cycleId: cycle.id,
+      status: "ACTIVE",
+      photoUrl: { not: null },
+      badgePrinted: false,
+      ...(activeGroup && { group: activeGroup }),
+    },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
   });
 
-  if (participants.length === 0) redirect("/participants/badges");
+  if (participants.length === 0) redirect(backHref);
 
   // Group into pages of 8
   const pages: (typeof participants)[] = [];
@@ -199,8 +213,8 @@ export default async function BadgePrintPage() {
       {/* Screen toolbar — hidden on print */}
       <div className="toolbar no-print">
         <Breadcrumb crumbs={[
-          { label: "Badges", href: "/participants/badges" },
-          { label: "Print Preview" },
+          { label: "Badges", href: backHref },
+          { label: activeGroup ? `Print Preview (${activeGroup === "ENGLISH" ? "English" : "Spanish"})` : "Print Preview" },
         ]} />
         <div className="flex items-center gap-3 ml-auto">
           <span className="text-xs text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full font-medium">
@@ -209,6 +223,7 @@ export default async function BadgePrintPage() {
           <PrintTrigger />
           <form action={markAllBadgesPrinted}>
             <input type="hidden" name="participantIds" value={allIds} />
+            {activeGroup && <input type="hidden" name="group" value={activeGroup} />}
             <button
               type="submit"
               className="text-sm font-medium bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
