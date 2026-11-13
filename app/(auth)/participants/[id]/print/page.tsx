@@ -17,7 +17,7 @@ const stageLabel: Record<OciaStage, string> = {
 
 function fmtDate(date: Date | null | undefined): string {
   if (!date) return "";
-  return new Date(date).toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" });
+  return new Date(date).toLocaleDateString("en-US", { timeZone: "UTC", month: "2-digit", day: "2-digit", year: "numeric" });
 }
 
 function Field({ value, className = "" }: { value?: string | null; className?: string }) {

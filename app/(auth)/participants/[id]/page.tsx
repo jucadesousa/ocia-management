@@ -41,7 +41,7 @@ function SectionTitle({ title }: { title: string }) {
 
 function fmt(date: Date | null | undefined, opts?: Intl.DateTimeFormatOptions) {
   if (!date) return null;
-  return new Date(date).toLocaleDateString("en-US", opts ?? { year: "numeric", month: "long", day: "numeric" });
+  return new Date(date).toLocaleDateString("en-US", { timeZone: "UTC", ...(opts ?? { year: "numeric", month: "long", day: "numeric" }) });
 }
 
 function initials(name: string): string {
@@ -336,7 +336,7 @@ export default async function ParticipantDetailPage({ params, searchParams }: Pr
                     </td>
                     <td className="px-4 py-3 text-gray-600">
                       {r.session.date
-                        ? new Date(r.session.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                        ? new Date(r.session.date).toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric", year: "numeric" })
                         : "—"}
                     </td>
                     <td className="px-4 py-3">

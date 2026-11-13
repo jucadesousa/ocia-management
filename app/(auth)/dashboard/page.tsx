@@ -60,6 +60,7 @@ export default async function DashboardPage() {
 
   const formatSessionDate = (d: Date) =>
     new Date(d).toLocaleDateString("en-US", {
+      timeZone: "UTC",
       weekday: "long", month: "long", day: "numeric", year: "numeric",
     });
 

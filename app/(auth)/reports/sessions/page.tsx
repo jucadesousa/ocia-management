@@ -19,6 +19,7 @@ const statusLabel: Record<SessionStatus, string> = {
 function formatDate(date: Date | null): string {
   if (!date) return "—";
   return new Date(date).toLocaleDateString("en-US", {
+    timeZone: "UTC",
     month: "short",
     day: "numeric",
     year: "numeric",
