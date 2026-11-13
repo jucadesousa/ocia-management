@@ -2,7 +2,7 @@ import Link from "next/link";
 import { requireAuth } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 import { todayUTCMidnight } from "@/lib/timezone";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, History } from "lucide-react";
 
 export default async function DashboardPage() {
   const user = await requireAuth();
@@ -39,12 +39,29 @@ export default async function DashboardPage() {
 
   const startOfToday = todayUTCMidnight();
 
-  const upcomingSession = cycle
-    ? await prisma.session.findFirst({
-        where: { cycleId: cycle.id, status: "PLANNED", date: { gte: startOfToday } },
-        orderBy: { date: "asc" },
-      })
-    : null;
+  const [previousSession, upcomingSession] = cycle
+    ? await Promise.all([
+        prisma.session.findFirst({
+          where: { cycleId: cycle.id, status: { not: "CANCELLED" }, date: { lt: startOfToday } },
+          orderBy: { date: "desc" },
+          include: {
+            _count: { select: { attendanceRecords: { where: { status: "PRESENT" } } } },
+          },
+        }),
+        prisma.session.findFirst({
+          where: { cycleId: cycle.id, status: "PLANNED", date: { gte: startOfToday } },
+          orderBy: { date: "asc" },
+        }),
+      ])
+    : [null, null];
+
+  const sessionHeading = (s: { type: string; number: number; title: string | null }) =>
+    `${s.type === "WEEKLY" ? `Session ${s.number}` : `Reflection ${s.number}`}${s.title ? ` — ${s.title}` : ""}`;
+
+  const formatSessionDate = (d: Date) =>
+    new Date(d).toLocaleDateString("en-US", {
+      weekday: "long", month: "long", day: "numeric", year: "numeric",
+    });
 
   const atRiskCount =
     completedSessionCount > 0 && Array.isArray(atRiskParticipants)
@@ -115,6 +132,34 @@ export default async function DashboardPage() {
         })}
       </div>
 
+      {previousSession && (
+        <div className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-gray-400 p-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <History size={13} />
+            Previous Session
+          </p>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <p className="font-semibold text-gray-900">{sessionHeading(previousSession)}</p>
+              {previousSession.date && (
+                <p className="text-sm text-gray-500 mt-0.5">
+                  {formatSessionDate(previousSession.date)}
+                  {previousSession.status === "COMPLETED"
+                    ? ` · ${previousSession._count.attendanceRecords} present`
+                    : " · Attendance not yet recorded"}
+                </p>
+              )}
+            </div>
+            <Link
+              href={`/sessions/${previousSession.id}`}
+              className="shrink-0 text-sm font-medium px-4 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              View Session
+            </Link>
+          </div>
+        </div>
+      )}
+
       {upcomingSession && (
         <div className="bg-white rounded-xl border border-gray-200 border-l-4 border-l-catecheo p-5">
           <p className="text-xs font-semibold text-catecheo uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -123,17 +168,10 @@ export default async function DashboardPage() {
           </p>
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div>
-              <p className="font-semibold text-gray-900">
-                {upcomingSession.type === "WEEKLY"
-                  ? `Session ${upcomingSession.number}`
-                  : `Reflection ${upcomingSession.number}`}
-                {upcomingSession.title ? ` — ${upcomingSession.title}` : ""}
-              </p>
+              <p className="font-semibold text-gray-900">{sessionHeading(upcomingSession)}</p>
               {upcomingSession.date && (
                 <p className="text-sm text-gray-500 mt-0.5">
-                  {new Date(upcomingSession.date).toLocaleDateString("en-US", {
-                    weekday: "long", month: "long", day: "numeric", year: "numeric",
-                  })}
+                  {formatSessionDate(upcomingSession.date)}
                 </p>
               )}
             </div>
