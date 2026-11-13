@@ -35,7 +35,7 @@ export default async function ReportsPage() {
       href: "/reports/contacts",
       title: "Contact List",
       description:
-        "Phone and email for all active participants, filterable by group.",
+        "Phone and email for all active participants and their sponsors, filterable by group.",
       badge: "Print · Excel",
       icon: Phone,
     },
